@@ -1,0 +1,5 @@
+# Internal planning and design docs — not part of the published package
+docs/
+
+# Build artifacts
+build/

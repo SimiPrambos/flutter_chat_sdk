@@ -1,0 +1,89 @@
+name: Bug Report
+description: Report a bug in the package
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug!
+        Please fill in as much detail as possible.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the behavior.
+      placeholder: |
+        1. Create a Chat with ...
+        2. Call sendMessage(...)
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened. Include error messages or stack traces.
+    validations:
+      required: true
+
+  - type: input
+    id: package_version
+    attributes:
+      label: Package version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: flutter_version
+    attributes:
+      label: Flutter version
+      description: Output of `flutter --version`
+      placeholder: "Flutter 3.x.x"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - Web
+        - macOS
+        - Windows
+        - Linux
+    validations:
+      required: true
+
+  - type: textarea
+    id: adapter
+    attributes:
+      label: Adapter type
+      description: What ChatAdapter implementation are you using? (HTTP, WebSocket, Firebase, custom, etc.)
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other context, screenshots, or minimal reproducible example.
