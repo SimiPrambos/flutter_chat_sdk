@@ -4,16 +4,16 @@
 
 ### Bug Fixes
 
-* Outbound queue now skips processing when the adapter is disconnected — optimistic messages correctly stay in `pending` state until a connection is established
-* Incoming `PinEvent` now replaces the previously pinned message instead of accumulating multiple pinned messages
-* `getConversations()` no longer hides conversations whose participant list has not yet been loaded
+- Outbound queue now skips processing when the adapter is disconnected — optimistic messages correctly stay in `pending` state until a connection is established
+- Incoming `PinEvent` now replaces the previously pinned message instead of accumulating multiple pinned messages
+- `getConversations()` no longer hides conversations whose participant list has not yet been loaded
 
 ### Code Quality
 
-* Renamed public entrypoint from `lib/chat.dart` to `lib/flutter_chat_sdk.dart` (import: `package:flutter_chat_sdk/flutter_chat_sdk.dart`)
-* All boolean parameters in the public API are now named (`{required bool isTyping}`, `{required bool isLoading}`)
-* Removed `ConversationExtensions` methods that were dead code shadowing `Conversation` class members
-* `OutboundOperation` factory methods converted to named constructors
+- Renamed public entrypoint from `lib/chat.dart` to `lib/flutter_chat_sdk.dart` (import: `package:flutter_chat_sdk/flutter_chat_sdk.dart`)
+- All boolean parameters in the public API are now named (`{required bool isTyping}`, `{required bool isLoading}`)
+- Removed `ConversationExtensions` methods that were dead code shadowing `Conversation` class members
+- `OutboundOperation` factory methods converted to named constructors
 
 ## 0.1.0
 
