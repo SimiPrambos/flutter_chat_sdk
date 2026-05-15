@@ -33,8 +33,8 @@ void main() {
     });
 
     test(
-        'creates ephemeral conversation and returns Conversation with ephemeral mode',
-        () async {
+        'creates ephemeral conversation and returns Conversation '
+        'with ephemeral mode', () async {
       final conversation = await chat.createConversation(
         mode: ConversationMode.ephemeral,
         name: 'Secret Squad',
@@ -46,8 +46,8 @@ void main() {
     });
 
     test(
-        'creates standard conversation with ConversationType.direct by default when type omitted',
-        () async {
+        'creates standard conversation with ConversationType.direct '
+        'by default when type omitted', () async {
       final conversation = await chat.createConversation(
         mode: ConversationMode.standard,
       );

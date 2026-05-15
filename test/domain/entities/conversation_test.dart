@@ -334,8 +334,8 @@ void main() {
       });
 
       test(
-          'returns false for direct conversation with self and another participant',
-          () {
+          'returns false for direct conversation with self '
+          'and another participant', () {
         const conversation = Conversation(
           id: 'room-123',
           type: ConversationType.direct,
@@ -359,8 +359,8 @@ void main() {
       });
 
       test(
-          'returns false for group conversation even with only self as participant',
-          () {
+          'returns false for group conversation even with only self '
+          'as participant', () {
         const conversation = Conversation(
           id: 'room-123',
           type: ConversationType.group,

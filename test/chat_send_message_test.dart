@@ -3,6 +3,7 @@
 /// These tests simulate the complete flow of sending a message
 /// as documented in docs/chat-package-guide.md.
 library;
+
 import 'dart:async';
 
 import 'package:flutter_chat_sdk/src/chat.dart';
@@ -264,8 +265,10 @@ void main() {
         final messages = database.getMessages('room-123');
         expect(messages, hasLength(1));
         expect(messages.first.attachments, hasLength(1));
-        expect(messages.first.attachments.first.url,
-            'https://example.com/doc.pdf',);
+        expect(
+          messages.first.attachments.first.url,
+          'https://example.com/doc.pdf',
+        );
         expect(messages.first.content.plainText, 'Japan');
       },
     );
@@ -571,8 +574,8 @@ void main() {
     });
 
     test(
-        'watchConversations re-emits stamped conversations when provider userId changes',
-        () async {
+        'watchConversations re-emits stamped conversations '
+        'when provider userId changes', () async {
       await chat.dispose();
       await adapter.dispose();
       await database.close();

@@ -4,6 +4,7 @@
 /// existing message statuses (delivered, read) are not overwritten
 /// with the default 'sent' status from the sync API.
 library;
+
 import 'package:flutter_chat_sdk/flutter_chat_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -39,7 +40,8 @@ void main() {
     test('Preserves delivered status when sync returns sent', () async {
       const roomId = 'room-123';
 
-      // Step 1: Create a message with delivered status (simulating socket event)
+      // Step 1: Create a message with delivered status
+      // (simulating socket event).
       final originalMessage = Message(
         id: 'msg-1',
         serverId: 'server-msg-1',
@@ -60,8 +62,10 @@ void main() {
       final room = await chat.getConversation(roomId);
       expect(room?.lastMessage?.status, MessageStatus.delivered);
 
-      // Step 2: Simulate sync API returning the same message with 'sent' status
-      // (This is what happens in production - sync API hardcodes status to 'sent')
+      // Step 2: Simulate sync API returning the same message
+      // with 'sent' status.
+      // This is what happens in production:
+      // sync API hardcodes status to 'sent'.
       final syncMessage = Message(
         id: 'msg-1',
         serverId: 'server-msg-1',

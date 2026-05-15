@@ -14,7 +14,8 @@ void main() {
     test('returns false for key with invalid characters', () {
       const config = DatabaseEncryptionConfig(
         encryptionKey:
-            '627ac90f35ac1a785afa41c586ea84e7e1c9205ec17264d2e2f77c00308a931g', // 'g' is not valid hex
+            '627ac90f35ac1a785afa41c586ea84e7e1c9205ec17264d2e2f77c00308a931g',
+        // 'g' is not valid hex
       );
       expect(config.isValid(), isFalse);
     });
@@ -22,7 +23,8 @@ void main() {
     test('returns false for key that is too short', () {
       const config = DatabaseEncryptionConfig(
         encryptionKey:
-            '627ac90f35ac1a785afa41c586ea84e7e1c9205ec17264d2e2f77c00308a931', // 63 characters
+            '627ac90f35ac1a785afa41c586ea84e7e1c9205ec17264d2e2f77c00308a931',
+        // 63 characters
       );
       expect(config.isValid(), isFalse);
     });
@@ -30,7 +32,8 @@ void main() {
     test('returns false for key that is too long', () {
       const config = DatabaseEncryptionConfig(
         encryptionKey:
-            '627ac90f35ac1a785afa41c586ea84e7e1c9205ec17264d2e2f77c00308a9318a', // 65 characters
+            '627ac90f35ac1a785afa41c586ea84e7e1c9205ec17264d2e2f77c00308a9318a',
+        // 65 characters
       );
       expect(config.isValid(), isFalse);
     });
