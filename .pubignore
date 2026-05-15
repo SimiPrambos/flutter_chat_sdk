@@ -2,5 +2,13 @@
 docs/
 settings.local.json
 
+# Claude Code project guidance — internal tooling, not useful to package consumers
+CLAUDE.md
+
+# CI/release tooling
+.github/
+release-please-config.json
+.release-please-manifest.json
+
 # Build artifacts
 build/
