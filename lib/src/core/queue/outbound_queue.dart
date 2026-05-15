@@ -1,3 +1,4 @@
+// Internal implementation details — public API docs live on the public facade.
 // ignore_for_file: public_member_api_docs
 
 import 'dart:async';
@@ -49,6 +50,169 @@ class OutboundOperation {
     this.errorMessage,
   }) : createdAt = createdAt ?? DateTime.now();
 
+  /// Helper to create a send message operation.
+  factory OutboundOperation.sendMessage({
+    required String messageId,
+    required String conversationId,
+    required String content,
+    MessageType? type,
+    String? replyToId,
+    List<PendingAttachment>? attachments,
+    String? nonce,
+    Map<String, dynamic>? extra,
+  }) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.sendMessage,
+      data: jsonEncode({
+        'messageId': messageId,
+        'conversationId': conversationId,
+        'content': content,
+        'type': type?.name,
+        'replyToId': replyToId,
+        'attachments': attachments
+            ?.map(
+              (a) => {
+                'filePath': a.filePath,
+                'fileName': a.fileName,
+                'mimeType': a.mimeType,
+              },
+            )
+            .toList(),
+        'nonce': nonce,
+        'extra': extra,
+      }),
+    );
+  }
+
+  /// Helper to create a star message operation.
+  factory OutboundOperation.starMessage(String roomId, String messageId) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.starMessage,
+      data: jsonEncode({'roomId': roomId, 'messageId': messageId}),
+    );
+  }
+
+  /// Helper to create an unstar message operation.
+  factory OutboundOperation.unstarMessage(String messageId) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.unstarMessage,
+      data: jsonEncode({'messageId': messageId}),
+    );
+  }
+
+  /// Helper to create a pin message operation.
+  factory OutboundOperation.pinMessage(
+    String conversationId,
+    String messageId,
+    Duration? duration,
+  ) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.pinMessage,
+      data: jsonEncode({
+        'conversationId': conversationId,
+        'messageId': messageId,
+        'duration': duration?.inSeconds,
+      }),
+    );
+  }
+
+  /// Helper to create an unpin message operation.
+  factory OutboundOperation.unpinMessage(
+    String conversationId,
+    String messageId,
+  ) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.unpinMessage,
+      data: jsonEncode({
+        'conversationId': conversationId,
+        'messageId': messageId,
+      }),
+    );
+  }
+
+  /// Helper to create an add reaction operation.
+  factory OutboundOperation.addReaction(
+    String messageId,
+    String emoji,
+  ) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.addReaction,
+      data: jsonEncode({
+        'messageId': messageId,
+        'emoji': emoji,
+      }),
+    );
+  }
+
+  /// Helper to create a remove reaction operation.
+  factory OutboundOperation.removeReaction(
+    String messageId,
+    String reactionId,
+  ) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.removeReaction,
+      data: jsonEncode({
+        'messageId': messageId,
+        'reactionId': reactionId,
+      }),
+    );
+  }
+
+  /// Helper to create a mark read operation.
+  factory OutboundOperation.markRead(
+    String conversationId,
+    String messageId,
+  ) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.markRead,
+      data: jsonEncode({
+        'conversationId': conversationId,
+        'messageId': messageId,
+      }),
+    );
+  }
+
+  /// Helper to create a delete conversation operation.
+  factory OutboundOperation.deleteConversation(String conversationId) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.deleteRoom,
+      data: jsonEncode({
+        'conversationId': conversationId,
+      }),
+    );
+  }
+
+  /// Helper to create an archive conversation operation.
+  factory OutboundOperation.archiveConversation(String conversationId) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.archiveRoom,
+      data: jsonEncode({
+        'conversationId': conversationId,
+      }),
+    );
+  }
+
+  /// Helper to create an unarchive conversation operation.
+  factory OutboundOperation.unarchiveConversation(String conversationId) {
+    return OutboundOperation(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: OutboundOperationType.unarchiveRoom,
+      data: jsonEncode({
+        'conversationId': conversationId,
+      }),
+    );
+  }
+
   /// Unique ID for this operation.
   final String id;
 
@@ -93,169 +257,6 @@ class OutboundOperation {
       createdAt: createdAt ?? this.createdAt,
       processedAt: processedAt ?? this.processedAt,
       errorMessage: errorMessage ?? this.errorMessage,
-    );
-  }
-
-  /// Helper to create a send message operation.
-  static OutboundOperation sendMessage({
-    required String messageId,
-    required String conversationId,
-    required String content,
-    MessageType? type,
-    String? replyToId,
-    List<PendingAttachment>? attachments,
-    String? nonce,
-    Map<String, dynamic>? extra,
-  }) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.sendMessage,
-      data: jsonEncode({
-        'messageId': messageId,
-        'conversationId': conversationId,
-        'content': content,
-        'type': type?.name,
-        'replyToId': replyToId,
-        'attachments': attachments
-            ?.map(
-              (a) => {
-                'filePath': a.filePath,
-                'fileName': a.fileName,
-                'mimeType': a.mimeType,
-              },
-            )
-            .toList(),
-        'nonce': nonce,
-        'extra': extra,
-      }),
-    );
-  }
-
-  /// Helper to create a star message operation.
-  static OutboundOperation starMessage(String roomId, String messageId) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.starMessage,
-      data: jsonEncode({'roomId': roomId, 'messageId': messageId}),
-    );
-  }
-
-  /// Helper to create an unstar message operation.
-  static OutboundOperation unstarMessage(String messageId) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.unstarMessage,
-      data: jsonEncode({'messageId': messageId}),
-    );
-  }
-
-  /// Helper to create a pin message operation.
-  static OutboundOperation pinMessage(
-    String conversationId,
-    String messageId,
-    Duration? duration,
-  ) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.pinMessage,
-      data: jsonEncode({
-        'conversationId': conversationId,
-        'messageId': messageId,
-        'duration': duration?.inSeconds,
-      }),
-    );
-  }
-
-  /// Helper to create an unpin message operation.
-  static OutboundOperation unpinMessage(
-    String conversationId,
-    String messageId,
-  ) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.unpinMessage,
-      data: jsonEncode({
-        'conversationId': conversationId,
-        'messageId': messageId,
-      }),
-    );
-  }
-
-  /// Helper to create an add reaction operation.
-  static OutboundOperation addReaction(
-    String messageId,
-    String emoji,
-  ) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.addReaction,
-      data: jsonEncode({
-        'messageId': messageId,
-        'emoji': emoji,
-      }),
-    );
-  }
-
-  /// Helper to create a remove reaction operation.
-  static OutboundOperation removeReaction(
-    String messageId,
-    String reactionId,
-  ) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.removeReaction,
-      data: jsonEncode({
-        'messageId': messageId,
-        'reactionId': reactionId,
-      }),
-    );
-  }
-
-  /// Helper to create a mark read operation.
-  static OutboundOperation markRead(
-    String conversationId,
-    String messageId,
-  ) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.markRead,
-      data: jsonEncode({
-        'conversationId': conversationId,
-        'messageId': messageId,
-      }),
-    );
-  }
-
-  /// Helper to create a delete conversation operation.
-  static OutboundOperation deleteConversation(String conversationId) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.deleteRoom,
-      data: jsonEncode({
-        'conversationId': conversationId,
-      }),
-    );
-  }
-
-  /// Helper to create an archive conversation operation.
-  static OutboundOperation archiveConversation(String conversationId) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.archiveRoom,
-      data: jsonEncode({
-        'conversationId': conversationId,
-      }),
-    );
-  }
-
-  /// Helper to create an unarchive conversation operation.
-  static OutboundOperation unarchiveConversation(String conversationId) {
-    return OutboundOperation(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: OutboundOperationType.unarchiveRoom,
-      data: jsonEncode({
-        'conversationId': conversationId,
-      }),
     );
   }
 }
@@ -549,6 +550,11 @@ class OutboundQueueImpl implements OutboundQueue {
       await initialize();
     }
 
+    // Only process when the adapter has an active connection.
+    // Enqueuing while offline is fine — processQueue() is called again
+    // when the connection is restored (see Chat._connectionState listener).
+    if (!_adapter.isConnected) return;
+
     // Prevent concurrent processing
     if (_isProcessing) {
       ChatLogger.debug('Queue already processing, skipping');
@@ -752,7 +758,7 @@ class OutboundQueueImpl implements OutboundQueue {
 
   /// Updates the local message status to [MessageStatus.sent] after the
   /// outbound queue successfully delivers a sendMessage operation.
-  /// Also writes the server-assigned [serverId] and [serverTimestamp] so that
+  /// Also writes the server-assigned `serverId` and `serverTimestamp` so that
   /// subsequent socket echoes can be deduplicated via the serverId check.
   Future<void> _updateMessageStatusAfterSuccess(
     OutboundOperation operation,
@@ -783,7 +789,7 @@ class OutboundQueueImpl implements OutboundQueue {
       if (serverMessage != null && serverMessage.attachments.isNotEmpty) {
         await _database.insertMessage(serverMessage);
       }
-    } catch (e) {
+    } on Object catch (e) {
       ChatLogger.error('Failed to update message status after send', e);
     }
   }
@@ -802,7 +808,7 @@ class OutboundQueueImpl implements OutboundQueue {
         messageId,
         status: MessageStatus.failed,
       );
-    } catch (e) {
+    } on Object catch (e) {
       ChatLogger.error('Failed to update message status on failure', e);
     }
   }
