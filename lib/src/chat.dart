@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_chat_sdk/src/adapters/chat_adapter.dart';
 import 'package:flutter_chat_sdk/src/config/chat_config.dart';
 import 'package:flutter_chat_sdk/src/config/chat_identity_provider.dart';
@@ -15,8 +17,6 @@ import 'package:flutter_chat_sdk/src/domain/domain.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/file_attachment.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/presence_result.dart';
 import 'package:flutter_chat_sdk/src/exceptions/chat_exception.dart';
-import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 /// Current user-scoped readiness of the chat SDK.
@@ -323,7 +323,7 @@ class Chat {
   }
 
   Stream<List<Conversation>> _watchPresentedConversations(
-      ConversationFilter? filter) {
+      ConversationFilter? filter,) {
     late final StreamController<List<Conversation>> controller;
     StreamSubscription<List<Conversation>>? conversationsSubscription;
     StreamSubscription<void>? identitySubscription;
@@ -360,7 +360,7 @@ class Chat {
   }
 
   List<Conversation> _presentConversations(
-      List<Conversation> conversations, ConversationFilter? filter) {
+      List<Conversation> conversations, ConversationFilter? filter,) {
     if (_userId == null) return const [];
 
     var filtered = conversations
@@ -368,8 +368,8 @@ class Chat {
         .map(_stampCurrentUser);
 
     if (filter?.mode == ConversationMode.ephemeral) {
-      filtered = filtered
-          .where((e) => !e.isExpired && _isCurrentUserApproved(e));
+      filtered =
+          filtered.where((e) => !e.isExpired && _isCurrentUserApproved(e));
     }
 
     return filtered.toList();
@@ -379,6 +379,11 @@ class Chat {
   bool _isCurrentUserApproved(Conversation conversation) {
     // If no userId set, show all conversations (fallback behavior)
     if (_userId == null) return true;
+
+    // No participant data loaded yet — don't hide the conversation.
+    // The filter is intended to remove conversations where the user was
+    // explicitly removed, not to hide conversations with missing metadata.
+    if (conversation.participants.isEmpty) return true;
 
     // Find current user's participant
     final myParticipant = conversation.participants.firstWhereOrNull(
@@ -472,7 +477,7 @@ class Chat {
     final conversation = await _database.getConversation(conversationId);
     if (conversation != null) {
       await _database.updateConversation(
-          conversation.copyWith(status: ConversationStatus.archived));
+          conversation.copyWith(status: ConversationStatus.archived),);
     }
     unawaited(
       _outboundQueue
@@ -486,7 +491,7 @@ class Chat {
     final conversation = await _database.getConversation(conversationId);
     if (conversation != null) {
       await _database.updateConversation(
-          conversation.copyWith(status: ConversationStatus.active));
+          conversation.copyWith(status: ConversationStatus.active),);
     }
     unawaited(
       _outboundQueue
@@ -502,10 +507,9 @@ class Chat {
   ///
   /// For reactive updates, use [watchConversations] instead.
   Future<List<Conversation>> getConversations(
-      {ConversationFilter? filter}) async {
+      {ConversationFilter? filter,}) async {
     _ensureInitialized();
-    final conversations =
-        await _database.getAllConversations(filter: filter);
+    final conversations = await _database.getAllConversations(filter: filter);
     return _presentConversations(conversations, filter)
         .where(_isCurrentUserApproved)
         .toList();
@@ -521,7 +525,7 @@ class Chat {
   ///
   /// For reactive updates, use [watchMessages] instead.
   Future<List<Message>> getMessages(String conversationId,
-      {int limit = 50}) async {
+      {int limit = 50,}) async {
     _ensureInitialized();
     return _database.getMessagesByConversation(conversationId, limit: limit);
   }
@@ -537,7 +541,7 @@ class Chat {
     _ensureInitialized();
     return watchConversations().map(
       (conversations) => conversations.fold<int>(
-          0, (sum, conversation) => sum + conversation.unreadCount),
+          0, (sum, conversation) => sum + conversation.unreadCount,),
     );
   }
 
@@ -546,8 +550,7 @@ class Chat {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /// Add participants to conversation.
-  Future<void> addParticipants(
-      String conversationId, List<String> userIds) {
+  Future<void> addParticipants(String conversationId, List<String> userIds) {
     _ensureInitialized();
     return _registry.adapter.addParticipants(conversationId, userIds);
   }
@@ -595,11 +598,11 @@ class Chat {
   /// Returns the result including [LoadMessagesResult.hasMore] to indicate
   /// whether more history is available.
   Future<LoadMessagesResult> loadMoreMessages(String conversationId,
-      {String? beforeId}) async {
+      {String? beforeId,}) async {
     _ensureInitialized();
     final cursor = beforeId ?? _conversationPrevBatch[conversationId];
-    final result = await _registry.adapter
-        .loadMessages(conversationId, before: cursor);
+    final result =
+        await _registry.adapter.loadMessages(conversationId, before: cursor);
 
     // Persist to DB so watchMessages() picks them up
     for (final message in result.messages) {
@@ -646,7 +649,7 @@ class Chat {
         ? MessageContent(
             plainText: params.content,
             cipherText: params.content,
-            nonce: params.nonce!,
+            nonce: params.nonce,
           )
         : MessageContent(plainText: params.content);
     final messageId = _generateId();
@@ -725,7 +728,7 @@ class Chat {
       // Update local state immediately for optimistic UI
       await _database.updateMessage(messageId, isStarred: true);
       // Call adapter directly and return the star ID
-      return await _registry.adapter.starMessage(conversationId, messageId);
+      return _registry.adapter.starMessage(conversationId, messageId);
     } else {
       // For unstarring, caller should use unstarMessage with starId
       return '';
@@ -762,10 +765,9 @@ class Chat {
 
   /// Get starred messages by conversation (one-shot).
   Future<List<Message>> getStarredMessagesByConversation(
-      String conversationId) {
+      String conversationId,) {
     _ensureInitialized();
-    return _registry.adapter
-        .getStarredMessagesByConversation(conversationId);
+    return _registry.adapter.getStarredMessagesByConversation(conversationId);
   }
 
   /// Pin message.
@@ -804,7 +806,8 @@ class Chat {
     return _database.watchPinnedMessages(conversationId);
   }
 
-  /// Watch pinned events for conversation (for displaying pin notifications in stream).
+  /// Watch pinned events for conversation (for displaying pin notifications
+  /// in stream).
   Stream<List<PinnedEvent>> watchPinnedEvents(String conversationId) {
     _ensureInitialized();
     return _database.watchPinnedEvents(conversationId);
@@ -835,7 +838,7 @@ class Chat {
 
   /// Remove reaction from message.
   Future<void> removeReaction(
-      String messageId, String reactionIdOrEmoji) async {
+      String messageId, String reactionIdOrEmoji,) async {
     _ensureInitialized();
     var reactionId = reactionIdOrEmoji;
     final reactions = await _database.getReactionsForMessage(messageId);
@@ -864,7 +867,7 @@ class Chat {
   /// Send typing indicator.
   Future<void> sendTyping(String conversationId, {bool isTyping = true}) {
     _ensureInitialized();
-    return _registry.adapter.sendTyping(conversationId, isTyping);
+    return _registry.adapter.sendTyping(conversationId, isTyping: isTyping);
   }
 
   /// Subscribe to presence updates for a user.
@@ -970,7 +973,8 @@ class Chat {
   // PRIVATE METHODS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  /// Stamps the current user's ID and role on a Conversation before returning to callers.
+  /// Stamps the current user's ID and role on a Conversation before returning
+  /// to callers.
   Conversation _stampCurrentUser(Conversation conversation) {
     if (_userId == null) return conversation;
 
@@ -1052,8 +1056,9 @@ class Chat {
   }
 
   void _handleAdapterEvent(ChatEvent event) {
-    // Process event via sync engine (saves to database, then emits to event bus)
-    // The event bus listener will forward to _eventController for public API
+    // Process event via sync engine (saves to database, then emits to event
+    // bus). The event bus listener will forward to _eventController for the
+    // public API.
     _syncEngine.handleEvent(event, currentUserId: _userId);
   }
 
