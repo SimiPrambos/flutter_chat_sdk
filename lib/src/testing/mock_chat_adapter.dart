@@ -88,7 +88,7 @@ class MockChatAdapter implements ChatAdapter {
 
   @override
   Future<Conversation> createConversation(
-      CreateConversationParams params) async {
+      CreateConversationParams params,) async {
     final conversation = Conversation(
       id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
       type: params.type,
@@ -106,7 +106,7 @@ class MockChatAdapter implements ChatAdapter {
 
   @override
   Future<Conversation> updateConversation(
-      String conversationId, UpdateConversationParams params) async {
+      String conversationId, UpdateConversationParams params,) async {
     final existing = _conversations[conversationId];
     if (existing == null) throw Exception('Conversation not found');
     final updated = existing.copyWith(
@@ -134,8 +134,7 @@ class MockChatAdapter implements ChatAdapter {
       'MOCK-$conversationId';
 
   @override
-  Future<Conversation> joinConversation(
-      JoinConversationParams params) async {
+  Future<Conversation> joinConversation(JoinConversationParams params) async {
     final conversation = Conversation(
       id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
       type: ConversationType.group,
@@ -152,19 +151,28 @@ class MockChatAdapter implements ChatAdapter {
 
   @override
   Future<void> addParticipants(
-      String conversationId, List<String> userIds) async {}
+    String conversationId,
+    List<String> userIds,
+  ) async {}
 
   @override
   Future<void> removeParticipant(
-      String conversationId, String userId) async {}
+    String conversationId,
+    String userId,
+  ) async {}
 
   @override
-  Future<void> updateParticipantStatus(String conversationId, String userId,
-      ParticipantStatus status) async {}
+  Future<void> updateParticipantStatus(
+    String conversationId,
+    String userId,
+    ParticipantStatus status,
+  ) async {}
 
   @override
   Future<List<Participant>> getPendingRequests(
-      String conversationId) async => [];
+    String conversationId,
+  ) async =>
+      [];
 
   @override
   Future<Message> sendMessage(SendMessageParams params) async {
@@ -179,31 +187,39 @@ class MockChatAdapter implements ChatAdapter {
       serverId: 'srv-${DateTime.now().millisecondsSinceEpoch}',
       status: MessageStatus.sent,
     );
-    _messages
-        .putIfAbsent(params.conversationId, () => [])
-        .add(message);
-    _eventController.add(MessageEvent(
-      eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
-      timestamp: DateTime.now(),
-      message: message,
-    ));
+    _messages.putIfAbsent(params.conversationId, () => []).add(message);
+    _eventController.add(
+      MessageEvent(
+        eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+        timestamp: DateTime.now(),
+        message: message,
+      ),
+    );
     return message;
   }
 
   @override
   Future<void> deleteMessage(
-      String conversationId, String messageId) async {
+    String conversationId,
+    String messageId,
+  ) async {
     _messages[conversationId]?.removeWhere((m) => m.id == messageId);
   }
 
   @override
-  Future<LoadMessagesResult> loadMessages(String conversationId,
-          {String? before, int? limit}) async =>
+  Future<LoadMessagesResult> loadMessages(
+    String conversationId, {
+    String? before,
+    int? limit,
+  }) async =>
       LoadMessagesResult(messages: _messages[conversationId] ?? const []);
 
   @override
   Future<String> starMessage(
-      String conversationId, String messageId) async => 'star-$messageId';
+    String conversationId,
+    String messageId,
+  ) async =>
+      'star-$messageId';
 
   @override
   Future<void> unstarMessage(String messageId) async {}
@@ -213,15 +229,22 @@ class MockChatAdapter implements ChatAdapter {
 
   @override
   Future<List<Message>> getStarredMessagesByConversation(
-      String conversationId) async => [];
+    String conversationId,
+  ) async =>
+      [];
 
   @override
-  Future<void> pinMessage(String conversationId, String messageId,
-      Duration? duration) async {}
+  Future<void> pinMessage(
+    String conversationId,
+    String messageId,
+    Duration? duration,
+  ) async {}
 
   @override
   Future<void> unpinMessage(
-      String conversationId, String messageId) async {}
+    String conversationId,
+    String messageId,
+  ) async {}
 
   @override
   Future<List<Message>> getPinnedMessages(String conversationId) async => [];
@@ -233,7 +256,10 @@ class MockChatAdapter implements ChatAdapter {
   Future<void> removeReaction(String messageId, String reactionId) async {}
 
   @override
-  Future<void> sendTyping(String conversationId, bool isTyping) async {}
+  Future<void> sendTyping(
+    String conversationId, {
+    required bool isTyping,
+  }) async {}
 
   @override
   Future<void> markAsRead(String conversationId, String messageId) async {}
@@ -276,11 +302,13 @@ class MockChatAdapter implements ChatAdapter {
       status: MessageStatus.sent,
     );
     _messages.putIfAbsent(conversationId, () => []).add(message);
-    _eventController.add(MessageEvent(
-      eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
-      timestamp: DateTime.now(),
-      message: message,
-    ));
+    _eventController.add(
+      MessageEvent(
+        eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+        timestamp: DateTime.now(),
+        message: message,
+      ),
+    );
   }
 
   /// Simulate a connection state change.

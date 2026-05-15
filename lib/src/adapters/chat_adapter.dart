@@ -57,7 +57,10 @@ abstract class HttpChatAdapter implements ChatAdapter {
   Stream<ChatEvent> get eventStream => const Stream.empty();
 
   @override
-  Future<void> sendTyping(String conversationId, bool isTyping) async {}
+  Future<void> sendTyping(
+    String conversationId, {
+    required bool isTyping,
+  }) async {}
 
   @override
   Future<void> markAsRead(String conversationId, String messageId) async {}
@@ -99,7 +102,9 @@ abstract class SocketChatAdapter implements ChatAdapter {
 
   @override
   Future<Conversation> updateConversation(
-          String conversationId, UpdateConversationParams params) =>
+    String conversationId,
+    UpdateConversationParams params,
+  ) =>
       throw UnimplementedError();
 
   @override
@@ -128,17 +133,24 @@ abstract class SocketChatAdapter implements ChatAdapter {
 
   @override
   Future<void> addParticipants(
-          String conversationId, List<String> userIds) =>
+    String conversationId,
+    List<String> userIds,
+  ) =>
       throw UnimplementedError();
 
   @override
   Future<void> removeParticipant(
-          String conversationId, String userId) =>
+    String conversationId,
+    String userId,
+  ) =>
       throw UnimplementedError();
 
   @override
   Future<void> updateParticipantStatus(
-          String conversationId, String userId, ParticipantStatus status) =>
+    String conversationId,
+    String userId,
+    ParticipantStatus status,
+  ) =>
       throw UnimplementedError();
 
   @override
@@ -154,8 +166,11 @@ abstract class SocketChatAdapter implements ChatAdapter {
       throw UnimplementedError();
 
   @override
-  Future<LoadMessagesResult> loadMessages(String conversationId,
-          {String? before, int? limit}) =>
+  Future<LoadMessagesResult> loadMessages(
+    String conversationId, {
+    String? before,
+    int? limit,
+  }) =>
       throw UnimplementedError();
 
   @override
@@ -170,12 +185,16 @@ abstract class SocketChatAdapter implements ChatAdapter {
 
   @override
   Future<List<Message>> getStarredMessagesByConversation(
-          String conversationId) =>
+    String conversationId,
+  ) =>
       throw UnimplementedError();
 
   @override
   Future<void> pinMessage(
-          String conversationId, String messageId, Duration? duration) =>
+    String conversationId,
+    String messageId,
+    Duration? duration,
+  ) =>
       throw UnimplementedError();
 
   @override
@@ -192,6 +211,13 @@ abstract class SocketChatAdapter implements ChatAdapter {
 
   @override
   Future<void> removeReaction(String messageId, String reactionId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> sendTyping(
+    String conversationId, {
+    required bool isTyping,
+  }) =>
       throw UnimplementedError();
 
   @override

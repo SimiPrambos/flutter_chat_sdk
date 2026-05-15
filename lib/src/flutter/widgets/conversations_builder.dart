@@ -1,6 +1,6 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/conversation.dart';
 import 'package:flutter_chat_sdk/src/extensions/context_extensions.dart';
-import 'package:flutter/widgets.dart';
 
 /// Builder widget that watches conversations from the Chat SDK.
 ///
@@ -11,7 +11,8 @@ import 'package:flutter/widgets.dart';
 ///     if (isLoading) return CircularProgressIndicator();
 ///     return ListView.builder(
 ///       itemCount: conversations.length,
-///       itemBuilder: (context, index) => ConversationTile(conversations[index]),
+///       itemBuilder: (context, index) =>
+///           ConversationTile(conversations[index]),
 ///     );
 ///   },
 /// )
@@ -26,9 +27,9 @@ class ConversationsBuilder extends StatelessWidget {
   final ConversationFilter? filter;
   final Widget Function(
     BuildContext context,
-    List<Conversation> conversations,
-    bool isLoading,
-  ) builder;
+    List<Conversation> conversations, {
+    required bool isLoading,
+  }) builder;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +41,7 @@ class ConversationsBuilder extends StatelessWidget {
         final isLoading = !snapshot.hasData;
         final conversations = snapshot.data ?? [];
 
-        return builder(context, conversations, isLoading);
+        return builder(context, conversations, isLoading: isLoading);
       },
     );
   }
