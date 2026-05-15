@@ -3,7 +3,7 @@
 /// This test verifies that when messages are synced from the server,
 /// existing message statuses (delivered, read) are not overwritten
 /// with the default 'sent' status from the sync API.
-import 'package:flutter_chat_sdk/chat.dart';
+import 'package:flutter_chat_sdk/flutter_chat_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/test_helpers.dart';

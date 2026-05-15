@@ -32,7 +32,8 @@ void main() {
       await database.close();
     });
 
-    test('creates ephemeral conversation and returns Conversation with ephemeral mode',
+    test(
+        'creates ephemeral conversation and returns Conversation with ephemeral mode',
         () async {
       final conversation = await chat.createConversation(
         mode: ConversationMode.ephemeral,

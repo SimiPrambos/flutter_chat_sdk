@@ -56,7 +56,7 @@ void main() {
     await database.customStatement(
       '''
       INSERT INTO messages (
-        id, server_id, room_id, sender_id, content, is_encrypted, type, status,
+        id, server_id, conversation_id, sender_id, content, is_encrypted, type, status,
         client_timestamp, server_timestamp, is_deleted, is_edited, is_starred,
         is_pinned, local_sequence
       ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 0, 0, 0, 0, 0)
@@ -76,7 +76,7 @@ void main() {
     await database.customStatement(
       '''
       INSERT INTO messages (
-        id, server_id, room_id, sender_id, content, is_encrypted, type, status,
+        id, server_id, conversation_id, sender_id, content, is_encrypted, type, status,
         client_timestamp, server_timestamp, is_deleted, is_edited, is_starred,
         is_pinned, local_sequence
       ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, 0, 0, 0, 0, 0)

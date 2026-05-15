@@ -1,8 +1,8 @@
 // example/lib/main.dart
 
 import 'package:flutter/material.dart';
-import 'package:chat/chat.dart';
-import 'package:chat/testing.dart';
+import 'package:flutter_chat_sdk/flutter_chat_sdk.dart';
+import 'package:flutter_chat_sdk/testing.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

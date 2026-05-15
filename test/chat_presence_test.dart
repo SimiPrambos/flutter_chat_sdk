@@ -1,4 +1,4 @@
-import 'package:flutter_chat_sdk/chat.dart';
+import 'package:flutter_chat_sdk/flutter_chat_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/test_helpers.dart';

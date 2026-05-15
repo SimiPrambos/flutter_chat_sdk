@@ -569,7 +569,8 @@ void main() {
       expect(conversations.first.first.name, 'Test Room');
     });
 
-    test('watchConversations re-emits stamped conversations when provider userId changes',
+    test(
+        'watchConversations re-emits stamped conversations when provider userId changes',
         () async {
       await chat.dispose();
       await adapter.dispose();

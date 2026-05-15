@@ -68,7 +68,8 @@ void main() {
     test('png is image', () => expect(resolver.isImage('png'), isTrue));
     test('heic is image', () => expect(resolver.isImage('heic'), isTrue));
     test('heif is image', () => expect(resolver.isImage('heif'), isTrue));
-    test('.PNG is image (dot prefix)', () => expect(resolver.isImage('.PNG'), isTrue));
+    test('.PNG is image (dot prefix)',
+        () => expect(resolver.isImage('.PNG'), isTrue));
     test('pdf is not image', () => expect(resolver.isImage('pdf'), isFalse));
     test('mp4 is not image', () => expect(resolver.isImage('mp4'), isFalse));
     test('empty is not image', () => expect(resolver.isImage(''), isFalse));

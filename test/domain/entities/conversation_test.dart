@@ -335,8 +335,7 @@ void main() {
     });
 
     group('hasDeletedParticipant', () {
-      test(
-          'returns true for direct conversation with only self as participant',
+      test('returns true for direct conversation with only self as participant',
           () {
         final conversation = Conversation(
           id: 'room-123',

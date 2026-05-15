@@ -25,7 +25,8 @@ void main() {
     });
 
     test('lastSeen can be null', () {
-      final result = PresenceResult(userId: 'user-1', active: false, lastSeen: null);
+      final result =
+          PresenceResult(userId: 'user-1', active: false, lastSeen: null);
 
       expect(result.lastSeen, isNull);
     });
