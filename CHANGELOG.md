@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+### Fixes
+
+- Fix GitHub Actions publishing to pub.dev by using the official
+  `dart-lang/setup-dart` reusable workflow for OIDC authentication.
+
 ## 0.2.0
 
 First public open-source release after moving the SDK from internal use

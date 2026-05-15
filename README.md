@@ -39,7 +39,7 @@ No backend needed. This example runs entirely in memory using `MockChatAdapter`.
 ```dart
 // pubspec.yaml
 dependencies:
-  flutter_chat_sdk: ^0.2.0
+  flutter_chat_sdk: ^0.2.1
 ```
 
 ```dart
@@ -80,7 +80,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_chat_sdk: ^0.2.0
+  flutter_chat_sdk: ^0.2.1
 ```
 
 For database encryption (optional):
