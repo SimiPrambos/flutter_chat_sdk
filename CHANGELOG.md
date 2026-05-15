@@ -1,24 +1,15 @@
 # Changelog
 
-## [1.0.0](https://github.com/SimiPrambos/flutter_chat_sdk/compare/flutter_chat_sdkv0.1.1...flutter_chat_sdkv1.0.0) (2026-05-15)
+## 0.2.0
 
+First public open-source release after moving the SDK from internal use
+to a public package.
 
-### ⚠ BREAKING CHANGES
+### Notes
 
-* remove backend-specific fields and methods from public API
-
-### Features
-
-* initial commit ([4f6d250](https://github.com/SimiPrambos/flutter_chat_sdk/commit/4f6d250e37988d5213de8179446d3aa84f03b1f0))
-* remove backend-specific fields and methods from public API ([e21fa2a](https://github.com/SimiPrambos/flutter_chat_sdk/commit/e21fa2a04e5a9bf69e77ac8251b389de830b7b85))
-
-
-### Bug Fixes
-
-* **chat:** show conversations when participant metadata is not yet loaded ([9853c04](https://github.com/SimiPrambos/flutter_chat_sdk/commit/9853c04ac83539f2de840aa779b3c607f3d706c4))
-* enforce named parameters for boolean arguments in public API ([106ffe5](https://github.com/SimiPrambos/flutter_chat_sdk/commit/106ffe5b0ff0dfbdf7e0fd45c51841de383d1791))
-* remove ConversationExtensions methods shadowing Conversation class members ([c445899](https://github.com/SimiPrambos/flutter_chat_sdk/commit/c445899f451d8e2693b320323857cd9f9edd7895))
-* **sync:** incoming pin event replaces the previously pinned message ([a66cce8](https://github.com/SimiPrambos/flutter_chat_sdk/commit/a66cce8d325e9d77b0c897f0ebe279a873bcd39a))
+- Establishes the public `0.x` release line for the package.
+- Recommended for early production adoption while the public API
+  continues to mature toward `1.0.0`.
 
 ## 0.1.2
 

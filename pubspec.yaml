@@ -3,7 +3,7 @@ description: >-
   A backend-agnostic Flutter chat SDK with offline-first support, real-time
   sync, and a persistent outbound queue that survives app restarts. Bring your
   own backend via the ChatAdapter interface.
-version: 1.0.0
+version: 0.2.0
 homepage: https://github.com/SimiPrambos/flutter_chat_sdk
 repository: https://github.com/SimiPrambos/flutter_chat_sdk
 issue_tracker: https://github.com/SimiPrambos/flutter_chat_sdk/issues

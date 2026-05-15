@@ -7,8 +7,6 @@ CLAUDE.md
 
 # CI/release tooling
 .github/
-release-please-config.json
-.release-please-manifest.json
 
 # Build artifacts
 build/
