@@ -280,7 +280,7 @@ class SyncEngineImpl implements SyncEngine {
       conversation: conversation,
       updateType: event.updateType,
       participant: event.participant,
-    ));
+    ),);
   }
 
   Future<void> _ensureConversationMetadataForIncomingMessage(
@@ -353,8 +353,8 @@ class SyncEngineImpl implements SyncEngine {
           currentUserId: currentUserId,
         )) {
       return existingConversation.copyWith(
-        lastMessage:
-            incomingConversation.lastMessage ?? existingConversation.lastMessage,
+        lastMessage: incomingConversation.lastMessage ??
+            existingConversation.lastMessage,
         lastMessageAt: incomingConversation.lastMessageAt ??
             existingConversation.lastMessageAt,
         unreadCount: incomingConversation.unreadCount > 0
@@ -371,9 +371,9 @@ class SyncEngineImpl implements SyncEngine {
   Future<Conversation?> _fetchRemoteConversation(String conversationId) async {
     try {
       return await _adapter.getConversation(conversationId);
-    } catch (e, s) {
+    } on Object catch (e, s) {
       ChatLogger.warning(
-          'Failed to hydrate conversation metadata for $conversationId: $e');
+          'Failed to hydrate conversation metadata for $conversationId: $e',);
       ChatLogger.error('Conversation metadata hydration error', e, s);
       return null;
     }
@@ -461,7 +461,6 @@ class SyncEngineImpl implements SyncEngine {
       id: message.conversationId,
       type: ConversationType.direct,
       mode: ConversationMode.standard,
-      status: ConversationStatus.active,
       participants: mergedParticipants,
       createdAt: message.timestamp,
       updatedAt: message.timestamp,
@@ -489,8 +488,7 @@ class SyncEngineImpl implements SyncEngine {
     if (conversationId.isEmpty) return;
     final existing = await _database.getConversation(conversationId);
     if (existing == null || existing.participants.isEmpty) {
-      final remoteConversation =
-          await _fetchRemoteConversation(conversationId);
+      final remoteConversation = await _fetchRemoteConversation(conversationId);
       if (remoteConversation != null) {
         await _database.insertConversation(remoteConversation);
       }
@@ -502,9 +500,11 @@ class SyncEngineImpl implements SyncEngine {
     String? currentUserId,
   }) async {
     ChatLogger.debug(
-        'Handling receipt event: type=${event.type}, messageId=${event.messageId}, conversationId=${event.conversationId}');
-    // A receipt can arrive before sync for a brand-new conversation (e.g. first
-    // message from a new contact).  Ensure the conversation exists locally first.
+        'Handling receipt event: type=${event.type}, '
+        'messageId=${event.messageId}, '
+        'conversationId=${event.conversationId}',);
+    // A receipt can arrive before sync for a brand-new conversation (e.g.
+    // first message from a new contact). Ensure it exists locally first.
     await _ensureConversationExists(event.conversationId);
     if (event.messageId.isEmpty) {
       // Conversation-level receipt — the other user's device received or read
@@ -549,12 +549,18 @@ class SyncEngineImpl implements SyncEngine {
   // }
 
   Future<void> _handlePinEvent(PinEvent event, {String? currentUserId}) async {
-    // Update the message's pinned status
-    await _database.updateMessage(
-      event.messageId,
-      isPinned: event.isPinned,
-      pinnedUntil: event.pinnedUntil,
-    );
+    // When pinning, unpin all other messages in the conversation first so only
+    // one message is pinned at a time (replacePinnedMessage handles this).
+    // When unpinning, just clear the flag on the target message.
+    if (event.isPinned) {
+      await _database.replacePinnedMessage(
+        event.conversationId,
+        event.messageId,
+        pinnedUntil: event.pinnedUntil,
+      );
+    } else {
+      await _database.updateMessage(event.messageId, isPinned: false);
+    }
 
     // Get the message to find conversationId
     final message = await _database.getMessage(event.messageId);
@@ -566,7 +572,8 @@ class SyncEngineImpl implements SyncEngine {
 
     if (event.isPinned) {
       // Create a new pinned event record
-      // Use pinnedBy from event if available, otherwise fall back to currentUserId or message sender
+      // Use pinnedBy from event if available, otherwise fall back to
+      // currentUserId or message sender
       final pinnedBy = event.pinnedBy ?? currentUserId ?? message.senderId;
 
       final pinnedEvent = PinnedEvent(
@@ -584,10 +591,10 @@ class SyncEngineImpl implements SyncEngine {
       final activeEvent = pinnedEvents.firstWhere(
         (e) => e.messageId == event.messageId && e.isActive,
         orElse: () => throw StateError(
-            'No active pinned event found for message ${event.messageId}'),
+            'No active pinned event found for message ${event.messageId}',),
       );
       await _database.updatePinnedEvent(activeEvent.id,
-          unpinnedAt: event.timestamp);
+          unpinnedAt: event.timestamp,);
     }
 
     _eventBus.emit(event);
@@ -595,6 +602,6 @@ class SyncEngineImpl implements SyncEngine {
 
   @override
   Future<void> dispose() async {
-    _syncStatusController.close();
+    await _syncStatusController.close();
   }
 }
