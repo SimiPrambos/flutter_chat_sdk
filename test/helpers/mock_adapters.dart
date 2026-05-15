@@ -79,8 +79,6 @@ class FakeChatAdapter implements ChatAdapter {
   @override
   Future<SyncResult> incrementalSync(String sinceToken) async {
     return SyncResult(
-      conversations: [],
-      messages: [],
       nextSyncToken: 'token-${DateTime.now().millisecondsSinceEpoch}',
     );
   }
@@ -88,14 +86,15 @@ class FakeChatAdapter implements ChatAdapter {
   @override
   Future<SyncResult> syncConversation(String conversationId) async {
     return SyncResult(
-      conversations: [],
-      messages: messages[conversationId] ?? [],
+      messages: messages[conversationId] ?? const [],
       nextSyncToken: 'token-${DateTime.now().millisecondsSinceEpoch}',
     );
   }
 
   @override
-  Future<Conversation> createConversation(CreateConversationParams params) async {
+  Future<Conversation> createConversation(
+    CreateConversationParams params,
+  ) async {
     final conversation = Conversation(
       id: 'conversation-${DateTime.now().millisecondsSinceEpoch}',
       type: params.type,
@@ -116,7 +115,9 @@ class FakeChatAdapter implements ChatAdapter {
 
   @override
   Future<Conversation> updateConversation(
-      String conversationId, UpdateConversationParams params) async {
+    String conversationId,
+    UpdateConversationParams params,
+  ) async {
     final conversation = _conversations[conversationId];
     if (conversation == null) throw Exception('Conversation not found');
     final updated = conversation.copyWith(
@@ -145,7 +146,9 @@ class FakeChatAdapter implements ChatAdapter {
       _conversations[conversationId] =
           conversation.copyWith(status: ConversationStatus.archived);
       _emitConversationUpdate(
-          _conversations[conversationId]!, ConversationUpdateType.updated);
+        _conversations[conversationId]!,
+        ConversationUpdateType.updated,
+      );
     }
   }
 
@@ -156,7 +159,9 @@ class FakeChatAdapter implements ChatAdapter {
       _conversations[conversationId] =
           conversation.copyWith(status: ConversationStatus.active);
       _emitConversationUpdate(
-          _conversations[conversationId]!, ConversationUpdateType.updated);
+        _conversations[conversationId]!,
+        ConversationUpdateType.updated,
+      );
     }
   }
 
@@ -172,7 +177,6 @@ class FakeChatAdapter implements ChatAdapter {
       mode: ConversationMode.ephemeral,
       name: params.displayName,
       myUserId: userId,
-      myRole: ParticipantRole.member,
     );
     _conversations[conversation.id] = conversation;
     messages[conversation.id] = [];
@@ -186,17 +190,20 @@ class FakeChatAdapter implements ChatAdapter {
 
   @override
   Future<void> addParticipants(
-      String conversationId, List<String> userIds) async {
+    String conversationId,
+    List<String> userIds,
+  ) async {
     final conversation = _conversations[conversationId];
     if (conversation != null) {
       final participants = List<Participant>.from(conversation.participants);
       for (final id in userIds) {
-        participants.add(Participant(
-          id: 'part-$id',
-          userId: id,
-          displayName: 'User $id',
-          status: ParticipantStatus.approved,
-        ));
+        participants.add(
+          Participant(
+            id: 'part-$id',
+            userId: id,
+            displayName: 'User $id',
+          ),
+        );
       }
       final updated = conversation.copyWith(participants: participants);
       _conversations[conversationId] = updated;
@@ -205,8 +212,7 @@ class FakeChatAdapter implements ChatAdapter {
   }
 
   @override
-  Future<void> removeParticipant(
-      String conversationId, String userId) async {
+  Future<void> removeParticipant(String conversationId, String userId) async {
     final conversation = _conversations[conversationId];
     if (conversation != null) {
       final participants =
@@ -214,7 +220,9 @@ class FakeChatAdapter implements ChatAdapter {
       final updated = conversation.copyWith(participants: participants);
       _conversations[conversationId] = updated;
       _emitConversationUpdate(
-          updated, ConversationUpdateType.participantRemoved);
+        updated,
+        ConversationUpdateType.participantRemoved,
+      );
     }
   }
 
@@ -242,7 +250,9 @@ class FakeChatAdapter implements ChatAdapter {
       final updated = conversation.copyWith(participants: participants);
       _conversations[conversationId] = updated;
       _emitConversationUpdate(
-          updated, ConversationUpdateType.participantUpdated);
+        updated,
+        ConversationUpdateType.participantUpdated,
+      );
     }
   }
 
@@ -269,7 +279,9 @@ class FakeChatAdapter implements ChatAdapter {
       status: MessageStatus.sent,
     );
     messages.putIfAbsent(params.conversationId, () => []).add(message);
-    _emitMessage(message);
+    // Deliberately no _emitMessage here — the server confirms receipt via a
+    // separate socket echo in production. Tests that need an incoming event
+    // should use simulateIncomingMessage instead.
     return message;
   }
 
@@ -331,10 +343,9 @@ class FakeChatAdapter implements ChatAdapter {
 
   @override
   Future<List<Message>> getStarredMessagesByConversation(
-      String conversationId) async {
-    return (messages[conversationId] ?? [])
-        .where((m) => m.isStarred)
-        .toList();
+    String conversationId,
+  ) async {
+    return (messages[conversationId] ?? []).where((m) => m.isStarred).toList();
   }
 
   @override
@@ -348,7 +359,6 @@ class FakeChatAdapter implements ChatAdapter {
       for (var i = 0; i < conversationMessages.length; i++) {
         messages[conversationId]![i] = conversationMessages[i].copyWith(
           isPinned: false,
-          pinnedUntil: null,
         );
       }
 
@@ -366,13 +376,10 @@ class FakeChatAdapter implements ChatAdapter {
   Future<void> unpinMessage(String conversationId, String messageId) async {
     final conversationMessages = messages[conversationId];
     if (conversationMessages != null) {
-      final index =
-          conversationMessages.indexWhere((m) => m.id == messageId);
+      final index = conversationMessages.indexWhere((m) => m.id == messageId);
       if (index != -1) {
-        messages[conversationId]![index] =
-            conversationMessages[index].copyWith(
+        messages[conversationId]![index] = conversationMessages[index].copyWith(
           isPinned: false,
-          pinnedUntil: null,
         );
       }
     }
@@ -394,27 +401,34 @@ class FakeChatAdapter implements ChatAdapter {
   }
 
   @override
-  Future<void> sendTyping(String conversationId, bool isTyping) async {
-    _eventController.add(TypingEvent(
-      eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
-      timestamp: DateTime.now(),
-      conversationId: conversationId,
-      userId: userId,
-      isTyping: isTyping,
-      userName: 'Test User',
-    ));
+  Future<void> sendTyping(
+    String conversationId, {
+    required bool isTyping,
+  }) async {
+    _eventController.add(
+      TypingEvent(
+        eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+        timestamp: DateTime.now(),
+        conversationId: conversationId,
+        userId: userId,
+        isTyping: isTyping,
+        userName: 'Test User',
+      ),
+    );
   }
 
   @override
   Future<void> markAsRead(String conversationId, String messageId) async {
-    _eventController.add(ReceiptEvent(
-      eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
-      timestamp: DateTime.now(),
-      conversationId: conversationId,
-      messageId: messageId,
-      userId: userId,
-      type: ReceiptType.read,
-    ));
+    _eventController.add(
+      ReceiptEvent(
+        eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+        timestamp: DateTime.now(),
+        conversationId: conversationId,
+        messageId: messageId,
+        userId: userId,
+        type: ReceiptType.read,
+      ),
+    );
   }
 
   @override
@@ -430,7 +444,7 @@ class FakeChatAdapter implements ChatAdapter {
 
   @override
   Stream<FileUploadProgress> uploadFile(UploadFileParams params) async* {
-    yield FileUploadProgress(
+    yield const FileUploadProgress(
       fileId: 'file-1',
       progress: 0,
       status: FileUploadStatus.uploading,
@@ -452,21 +466,27 @@ class FakeChatAdapter implements ChatAdapter {
   }
 
   void _emitMessage(Message message) {
-    _eventController.add(MessageEvent(
-      eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
-      timestamp: DateTime.now(),
-      message: message,
-    ));
+    _eventController.add(
+      MessageEvent(
+        eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+        timestamp: DateTime.now(),
+        message: message,
+      ),
+    );
   }
 
   void _emitConversationUpdate(
-      Conversation conversation, ConversationUpdateType type) {
-    _eventController.add(ConversationUpdateEvent(
-      eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
-      timestamp: DateTime.now(),
-      conversation: conversation,
-      updateType: type,
-    ));
+    Conversation conversation,
+    ConversationUpdateType type,
+  ) {
+    _eventController.add(
+      ConversationUpdateEvent(
+        eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+        timestamp: DateTime.now(),
+        conversation: conversation,
+        updateType: type,
+      ),
+    );
   }
 
   /// Simulate receiving a message from another user.
@@ -500,14 +520,16 @@ class FakeChatAdapter implements ChatAdapter {
     required String userId,
     required bool isTyping,
   }) {
-    _eventController.add(TypingEvent(
-      eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
-      timestamp: DateTime.now(),
-      conversationId: roomId,
-      userId: userId,
-      isTyping: isTyping,
-      userName: 'User $userId',
-    ));
+    _eventController.add(
+      TypingEvent(
+        eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+        timestamp: DateTime.now(),
+        conversationId: roomId,
+        userId: userId,
+        isTyping: isTyping,
+        userName: 'User $userId',
+      ),
+    );
   }
 
   /// Simulate a pin/unpin event from the backend.
@@ -517,13 +539,15 @@ class FakeChatAdapter implements ChatAdapter {
     required bool isPinned,
     DateTime? pinnedUntil,
   }) {
-    _eventController.add(PinEvent(
-      eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
-      timestamp: DateTime.now(),
-      conversationId: conversationId,
-      messageId: messageId,
-      isPinned: isPinned,
-      pinnedUntil: pinnedUntil,
-    ));
+    _eventController.add(
+      PinEvent(
+        eventId: 'evt-${DateTime.now().millisecondsSinceEpoch}',
+        timestamp: DateTime.now(),
+        conversationId: conversationId,
+        messageId: messageId,
+        isPinned: isPinned,
+        pinnedUntil: pinnedUntil,
+      ),
+    );
   }
 }

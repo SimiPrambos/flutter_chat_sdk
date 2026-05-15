@@ -41,20 +41,18 @@ class FakeChatDatabase implements ChatDatabase {
   Stream<List<Conversation>> watchConversations({ConversationFilter? filter}) {
     return _conversationsController.stream.map((conversations) {
       if (filter == null) return conversations;
-      return conversations
-          .where((c) => _matchesFilter(c, filter))
-          .toList();
+      return conversations.where((c) => _matchesFilter(c, filter)).toList();
     });
   }
 
   @override
-  Future<List<Conversation>> getAllConversations(
-      {ConversationFilter? filter}) async {
+  Future<List<Conversation>> getAllConversations({
+    ConversationFilter? filter,
+  }) async {
     var conversations = _conversations.values.toList();
     if (filter != null) {
-      conversations = conversations
-          .where((c) => _matchesFilter(c, filter))
-          .toList();
+      conversations =
+          conversations.where((c) => _matchesFilter(c, filter)).toList();
     }
     return conversations;
   }
@@ -95,7 +93,9 @@ class FakeChatDatabase implements ChatDatabase {
   }) async {
     final conversation = _conversations[conversationId];
     if (conversation == null) return;
+    final lastMsg = _findMessageById(messageId);
     _conversations[conversationId] = conversation.copyWith(
+      lastMessage: lastMsg,
       lastMessageAt: messageAt,
       unreadCount: incrementUnread
           ? conversation.unreadCount + 1
@@ -104,18 +104,28 @@ class FakeChatDatabase implements ChatDatabase {
     _emitConversations();
   }
 
+  Message? _findMessageById(String messageId) {
+    for (final messages in _messages.values) {
+      for (final m in messages) {
+        if (m.id == messageId) return m;
+      }
+    }
+    return null;
+  }
+
   @override
   Future<void> resetConversationUnreadCount(String conversationId) async {
     final conversation = _conversations[conversationId];
     if (conversation == null) return;
-    _conversations[conversationId] =
-        conversation.copyWith(unreadCount: 0);
+    _conversations[conversationId] = conversation.copyWith(unreadCount: 0);
     _emitConversations();
   }
 
   @override
-  Future<void> markConversationMessagesAsRead(String conversationId,
-      {String? senderIdFilter}) async {
+  Future<void> markConversationMessagesAsRead(
+    String conversationId, {
+    String? senderIdFilter,
+  }) async {
     for (final entry in _messages.entries) {
       if (entry.key == conversationId) {
         _messages[conversationId] = entry.value.map((m) {
@@ -134,8 +144,10 @@ class FakeChatDatabase implements ChatDatabase {
   }
 
   @override
-  Future<void> markConversationMessagesAsDelivered(String conversationId,
-      {String? senderIdFilter}) async {
+  Future<void> markConversationMessagesAsDelivered(
+    String conversationId, {
+    String? senderIdFilter,
+  }) async {
     for (final entry in _messages.entries) {
       if (entry.key == conversationId) {
         _messages[conversationId] = entry.value.map((m) {
@@ -158,7 +170,8 @@ class FakeChatDatabase implements ChatDatabase {
 
   @override
   Future<List<Participant>> getParticipantsForConversation(
-      String conversationId) async {
+    String conversationId,
+  ) async {
     return List.from(_participants[conversationId] ?? []);
   }
 
@@ -179,16 +192,17 @@ class FakeChatDatabase implements ChatDatabase {
   Stream<List<Message>> watchMessages(String conversationId) {
     _messagesController.putIfAbsent(
       conversationId,
-      () => StreamController<List<Message>>.broadcast(),
+      StreamController<List<Message>>.broadcast,
     );
     return _messagesController[conversationId]!.stream;
   }
 
   @override
-  Future<List<Message>> getMessagesByConversation(String conversationId,
-      {int limit = 50}) async {
-    final messages =
-        List<Message>.from(_messages[conversationId] ?? []);
+  Future<List<Message>> getMessagesByConversation(
+    String conversationId, {
+    int limit = 50,
+  }) async {
+    final messages = List<Message>.from(_messages[conversationId] ?? []);
     if (messages.length > limit) {
       return messages.sublist(0, limit);
     }
@@ -207,12 +221,107 @@ class FakeChatDatabase implements ChatDatabase {
     return null;
   }
 
+  // Status precedence: pending < sending < sent < delivered < read > failed.
+  // "failed" is treated as highest so it's never silently downgraded either.
+  static const _statusOrder = [
+    MessageStatus.pending,
+    MessageStatus.sending,
+    MessageStatus.sent,
+    MessageStatus.delivered,
+    MessageStatus.read,
+    MessageStatus.failed,
+  ];
+
+  bool _isHigherOrEqualStatus(MessageStatus existing, MessageStatus incoming) {
+    final eIdx = _statusOrder.indexOf(existing);
+    final iIdx = _statusOrder.indexOf(incoming);
+    return eIdx >= iIdx;
+  }
+
   @override
   Future<String> insertMessage(Message message) async {
-    _messages
-        .putIfAbsent(message.conversationId, () => [])
-        .add(message);
+    // Auto-create a minimal conversation record so that getConversation() and
+    // getConversations() work even when the test only inserts messages.
+    if (!_conversations.containsKey(message.conversationId)) {
+      _conversations[message.conversationId] = Conversation(
+        id: message.conversationId,
+        type: ConversationType.direct,
+        mode: ConversationMode.standard,
+        createdAt: message.clientTimestamp,
+        updatedAt: message.clientTimestamp,
+        lastMessage: message,
+        lastMessageAt: message.serverTimestamp ?? message.clientTimestamp,
+      );
+      _emitConversations();
+    }
+
+    final list = _messages.putIfAbsent(message.conversationId, () => []);
+
+    // Deduplicate by serverId (mirrors ChatDatabaseImpl behaviour).
+    if (message.serverId != null && message.serverId!.isNotEmpty) {
+      final existingIndex =
+          list.indexWhere((m) => m.serverId == message.serverId);
+      if (existingIndex != -1) {
+        final existing = list[existingIndex];
+
+        // Preserve caption: when server response drops the content but the
+        // local optimistic message has one, keep the original caption.
+        final incomingText = message.content.plainText?.trim() ?? '';
+        final preservedContent =
+            message.attachments.isNotEmpty && incomingText.isEmpty
+                ? existing.content
+                : message.content;
+
+        // Preserve higher status so that delivered/read is never downgraded.
+        final preservedStatus =
+            _isHigherOrEqualStatus(existing.status, message.status)
+                ? existing.status
+                : message.status;
+
+        // Merge server-provided attachments (CDN URLs) into the local record.
+        final mergedAttachments = message.attachments.isNotEmpty
+            ? message.attachments
+            : existing.attachments;
+
+        final updated = existing.copyWith(
+          serverId: message.serverId,
+          content: preservedContent,
+          status: preservedStatus,
+          serverTimestamp: message.serverTimestamp ?? existing.serverTimestamp,
+          attachments: mergedAttachments,
+        );
+        list[existingIndex] = updated;
+        _emitMessages(message.conversationId);
+
+        // Keep conversation.lastMessage in sync if this is the last message.
+        final conv = _conversations[message.conversationId];
+        if (conv != null && conv.lastMessage?.id == existing.id) {
+          _conversations[message.conversationId] =
+              conv.copyWith(lastMessage: updated);
+          _emitConversations();
+        }
+
+        return existing.id;
+      }
+    }
+
+    list.add(message);
     _emitMessages(message.conversationId);
+
+    // Keep the conversation's lastMessage in sync.
+    final conv = _conversations[message.conversationId];
+    if (conv != null) {
+      final currentLast = conv.lastMessageAt;
+      final msgAt = message.serverTimestamp ?? message.clientTimestamp;
+      if (currentLast == null || !msgAt.isBefore(currentLast)) {
+        _conversations[message.conversationId] = conv.copyWith(
+          lastMessage: message,
+          lastMessageAt: msgAt,
+        );
+        _emitConversations();
+      }
+    }
+
     return message.id;
   }
 
@@ -266,9 +375,8 @@ class FakeChatDatabase implements ChatDatabase {
       (m) => m.id == messageId || m.serverId == messageId,
     );
 
-    _messages[conversationId] = messages
-        .map((m) => m.copyWith(isPinned: false, pinnedUntil: null))
-        .toList();
+    _messages[conversationId] =
+        messages.map((m) => m.copyWith(isPinned: false)).toList();
 
     if (index != -1) {
       final target = _messages[conversationId]![index];
@@ -303,23 +411,20 @@ class FakeChatDatabase implements ChatDatabase {
   Stream<List<PinnedEvent>> watchPinnedEvents(String conversationId) {
     _pinnedEventsControllers.putIfAbsent(
       conversationId,
-      () => StreamController<List<PinnedEvent>>.broadcast(),
+      StreamController<List<PinnedEvent>>.broadcast,
     );
     return _pinnedEventsControllers[conversationId]!.stream;
   }
 
   @override
   Future<List<PinnedEvent>> getPinnedEvents(String conversationId) async {
-    return List<PinnedEvent>.from(
-        _pinnedEvents[conversationId] ?? const []);
+    return List<PinnedEvent>.from(_pinnedEvents[conversationId] ?? const []);
   }
 
   @override
   Future<void> insertPinnedEvent(PinnedEvent event) async {
-    final events =
-        _pinnedEvents.putIfAbsent(event.roomId, () => []);
-    final index =
-        events.indexWhere((existing) => existing.id == event.id);
+    final events = _pinnedEvents.putIfAbsent(event.roomId, () => []);
+    final index = events.indexWhere((existing) => existing.id == event.id);
     if (index == -1) {
       events.add(event);
     } else {
@@ -334,8 +439,7 @@ class FakeChatDatabase implements ChatDatabase {
     DateTime? unpinnedAt,
   }) async {
     for (final entry in _pinnedEvents.entries) {
-      final index =
-          entry.value.indexWhere((event) => event.id == eventId);
+      final index = entry.value.indexWhere((event) => event.id == eventId);
       if (index == -1) {
         continue;
       }
@@ -363,11 +467,7 @@ class FakeChatDatabase implements ChatDatabase {
     _emitPinnedEvents(conversationId);
   }
 
-  SyncState _syncState = const SyncState(
-    lastSyncToken: null,
-    lastSyncAt: null,
-    isInitialSyncComplete: false,
-  );
+  SyncState _syncState = const SyncState.initial();
 
   @override
   Future<SyncState?> getSyncState() async => _syncState;
@@ -384,23 +484,24 @@ class FakeChatDatabase implements ChatDatabase {
   void _emitMessages(String conversationId) {
     final controller = _messagesController[conversationId];
     if (controller != null) {
-      controller
-          .add(List<Message>.from(_messages[conversationId] ?? []));
+      controller.add(List<Message>.from(_messages[conversationId] ?? []));
     }
   }
 
   void _emitPinnedEvents(String conversationId) {
     final controller = _pinnedEventsControllers[conversationId];
     if (controller != null) {
-      controller.add(List<PinnedEvent>.from(
-          _pinnedEvents[conversationId] ?? const []));
+      controller.add(
+        List<PinnedEvent>.from(_pinnedEvents[conversationId] ?? const []),
+      );
     }
   }
 
   bool _matchesFilter(Conversation conversation, ConversationFilter filter) {
     if (filter.mode != null && conversation.mode != filter.mode) return false;
-    if (filter.status != null && conversation.status != filter.status)
+    if (filter.status != null && conversation.status != filter.status) {
       return false;
+    }
     if (filter.type != null && conversation.type != filter.type) return false;
     if (filter.searchQuery != null &&
         filter.searchQuery!.isNotEmpty &&
@@ -541,9 +642,7 @@ ChatRegistry createTestRegistry({
   ChatDatabase? database,
   FakeChatAdapter? adapter,
 }) {
-  final config = ChatConfig(
-    databasePath: ':memory:',
-  );
+  const config = ChatConfig(databasePath: ':memory:');
   final effectiveUserId = userId ?? 'test-user-123';
 
   return ChatRegistry.custom(
