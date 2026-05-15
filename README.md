@@ -531,10 +531,10 @@ void main() {
 
 ```
 lib/
-├── chat.dart           # Public API
+├── flutter_chat_sdk.dart  # Public API
 ├── testing.dart        # Testing utilities
 └── src/
-    ├── chat.dart                   # Chat facade
+    ├── chat.dart                       # Chat facade
     ├── adapters/
     │   └── chat_adapter.dart       # ChatAdapter, HttpChatAdapter, SocketChatAdapter
     ├── config/
