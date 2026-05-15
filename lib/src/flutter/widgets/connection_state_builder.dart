@@ -1,6 +1,6 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/connection_state.dart';
 import 'package:flutter_chat_sdk/src/extensions/context_extensions.dart';
-import 'package:flutter/widgets.dart';
 
 /// Builder widget that watches connection state.
 ///
@@ -20,11 +20,12 @@ import 'package:flutter/widgets.dart';
 /// ```
 class ConnectionStateBuilder extends StatelessWidget {
   const ConnectionStateBuilder({
-    super.key,
     required this.builder,
+    super.key,
   });
 
-  final Widget Function(BuildContext context, ChatConnectionState state) builder;
+  final Widget Function(BuildContext context, ChatConnectionState state)
+      builder;
 
   @override
   Widget build(BuildContext context) {

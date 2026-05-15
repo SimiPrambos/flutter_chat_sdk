@@ -7,8 +7,8 @@ export 'entities/conversation.dart';
 export 'entities/file_attachment.dart' show FileUploadStatus;
 export 'entities/message.dart';
 export 'entities/message_content.dart';
-export 'entities/pinned_event.dart';
 export 'entities/participant.dart';
+export 'entities/pinned_event.dart';
 export 'entities/reaction.dart';
 export 'entities/sync_state.dart';
 

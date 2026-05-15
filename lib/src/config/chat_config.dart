@@ -91,6 +91,12 @@ class ChatConfig {
           syncInterval == other.syncInterval;
 
   @override
-  int get hashCode => Object.hash(databasePath, encryptionKey, enableLogging,
-      maxRetryAttempts, heartbeatInterval, syncInterval);
+  int get hashCode => Object.hash(
+        databasePath,
+        encryptionKey,
+        enableLogging,
+        maxRetryAttempts,
+        heartbeatInterval,
+        syncInterval,
+      );
 }

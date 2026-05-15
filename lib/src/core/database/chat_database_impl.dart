@@ -4,15 +4,15 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_chat_sdk/src/config/chat_logger.dart';
 import 'package:flutter_chat_sdk/src/core/database/chat_database.dart';
 import 'package:flutter_chat_sdk/src/core/queue/outbound_queue.dart';
 import 'package:flutter_chat_sdk/src/core/security/database_key_config.dart';
 import 'package:flutter_chat_sdk/src/domain/domain.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/file_attachment.dart';
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -196,7 +196,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
           if (from < 3) {
             await _createIndexes();
           }
-          // Migration from v3 to v4: add participants table + remove my_user_id from rooms
+          // Migration from v3 to v4: add participants table + remove
+          // my_user_id from rooms
           if (from < 4) {
             // Add participants table (using old room_id column name)
             await customStatement('''
@@ -267,7 +268,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
               'ALTER TABLE rooms ADD COLUMN expires_at INTEGER',
             );
           }
-          // Migration from v6 to v7: rename rooms→conversations, room_id→conversation_id
+          // Migration from v6 to v7: rename rooms→conversations,
+          // room_id→conversation_id
           // v0.1 — no existing users; clear and recreate for clean schema.
           if (from < 7) {
             // Drop old tables (cascade-safe order)
@@ -323,13 +325,15 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
       ON outbound_operations(status, created_at)
     ''');
 
-    // Message dedup: insertMessage() scans pending messages by conversation + sender + status
+    // Message dedup: insertMessage() scans pending messages by conversation
+    // + sender + status
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_messages_conversation_sender_status
       ON messages(conversation_id, sender_id, status)
     ''');
 
-    // Reactions ordering: getReactionsForMessage() filters by message_id, orders by created_at
+    // Reactions ordering: getReactionsForMessage() filters by message_id,
+    // orders by created_at
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_reactions_message_created
       ON reactions(message_id, created_at)
@@ -338,13 +342,15 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
     // Pinned events indexes
     await _createPinnedEventIndexes();
 
-    // Conversation filtering: watchConversations()/getAllConversations() filter by status
+    // Conversation filtering: watchConversations()/getAllConversations()
+    // filter by status
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_conversations_status
       ON conversations(status)
     ''');
 
-    // Conversation filtering: watchConversations()/getAllConversations() filter by mode
+    // Conversation filtering: watchConversations()/getAllConversations()
+    // filter by mode
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_conversations_mode
       ON conversations(mode)
@@ -380,7 +386,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
       CREATE INDEX IF NOT EXISTS idx_pinned_events_active
       ON pinned_events(room_id, pinned_at) WHERE unpinned_at IS NULL
     ''');
-    // Note: pinned_events.room_id retained as-is (PinnedEvent entity still uses roomId)
+    // Note: pinned_events.room_id retained as-is (PinnedEvent entity still
+    // uses roomId)
   }
 
   // ==========================================================================
@@ -411,7 +418,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
     final count = result.data['count'] as int;
     if (count > 0) {
       ChatLogger.debug(
-          '[DB Migration] Found $count ephemeral conversations with null expiresAt, deleting...');
+          '[DB Migration] Found $count ephemeral conversations '
+            'with null expiresAt, deleting...',);
 
       // Delete all ephemeral conversations with null expiresAt
       await customStatement('''
@@ -431,7 +439,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
       ''');
 
       ChatLogger.debug(
-          '[DB Migration] Complete: deleted $count ephemeral conversations');
+          '[DB Migration] Complete: deleted $count ephemeral conversations',);
     }
   }
 
@@ -440,10 +448,10 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
   // ==========================================================================
 
   @override
-  Stream<List<Conversation>> watchConversations({ConversationFilter? filter}) {
+  Stream<List<Conversation>> watchConversations({ConversationFilter? filter,}) {
     final query = select(conversations).join([
       leftOuterJoin(
-          messages, messages.id.equalsExp(conversations.lastMessageId)),
+          messages, messages.id.equalsExp(conversations.lastMessageId),),
     ]);
 
     if (filter != null) {
@@ -491,10 +499,10 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
 
   @override
   Future<List<Conversation>> getAllConversations(
-      {ConversationFilter? filter}) async {
+      {ConversationFilter? filter,}) async {
     final query = select(conversations).join([
       leftOuterJoin(
-          messages, messages.id.equalsExp(conversations.lastMessageId)),
+          messages, messages.id.equalsExp(conversations.lastMessageId),),
     ]);
 
     if (filter != null) {
@@ -543,7 +551,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
   Future<Conversation?> getConversation(String conversationId) async {
     final query = select(conversations).join([
       leftOuterJoin(
-          messages, messages.id.equalsExp(conversations.lastMessageId)),
+          messages, messages.id.equalsExp(conversations.lastMessageId),),
     ])
       ..where(conversations.id.equals(conversationId));
     final row = await query.getSingleOrNull();
@@ -569,15 +577,17 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
       // During initialSync the API often returns stale timestamps, so we
       // preserve the local value when it is more recent.
       final existing = await (select(conversations)
-              ..where((r) => r.id.equals(conversation.id)))
+            ..where((r) => r.id.equals(conversation.id)))
           .getSingleOrNull();
 
       var data = _conversationToData(conversation);
 
       if (existing != null) {
-        // Keep the newer-or-equal local lastMessageAt/lastMessageId/unreadCount.
-        // Use !isBefore (≥) instead of isAfter (>) so that when receiveJoinNewRoom
-        // arrives after _handleMessageEvent already stamped lastMessageAt (equal
+        // Keep the newer-or-equal local
+        // lastMessageAt/lastMessageId/unreadCount.
+        // Use !isBefore (≥) instead of isAfter (>) so that when
+        // receiveJoinNewRoom arrives after _handleMessageEvent already stamped
+        // lastMessageAt (equal
         // timestamps), the existing lastMessageId is NOT overwritten with null.
         if (existing.lastMessageAt != null &&
             (conversation.lastMessageAt == null ||
@@ -593,7 +603,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
         // Incremental sync only returns timeline events — it does not include
         // full conversation state (name, type, mode, participants). When
         // participants are empty the incoming data has no reliable metadata, so
-        // preserve whatever the existing row already has to avoid corrupting it.
+        // preserve whatever the existing row already has to avoid corruption.
         if (conversation.participants.isEmpty) {
           data = data.copyWith(
             name: Value(existing.name),
@@ -605,15 +615,16 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
         }
       } else {
         // New conversation: don't carry over the server's totalUnreadMessage
-        // when there is no lastMessage reference. The server's count may already
-        // include the message that is about to arrive via the message socket
-        // event, which calls updateConversationLastMessage(incrementUnread: true).
-        // Starting at 0 prevents the +1 from creating a count of 2 instead of 1.
+        // when there is no lastMessage reference. The server's count may
+        // already include the message that is about to arrive via the message
+        // socket event, which calls
+        // updateConversationLastMessage(incrementUnread: true).
+        // Starting at 0 prevents the +1 from creating a count of 2 not 1.
         //
         // When a conversation arrives from sync (initialSync / incrementalSync)
         // it always has lastMessage populated, so the branch below is never
-        // taken for sync-sourced conversations — their authoritative server count
-        // is preserved.
+        // taken for sync-sourced conversations — their authoritative server
+        // count is preserved.
         if (conversation.lastMessage == null) {
           data = data.copyWith(unreadCount: const Value(0));
         }
@@ -639,8 +650,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
       await (delete(participants)
             ..where((p) => p.conversationId.equals(conversationId)))
           .go();
-      await (delete(conversations)
-            ..where((r) => r.id.equals(conversationId)))
+      await (delete(conversations)..where((r) => r.id.equals(conversationId)))
           .go();
       await deleteMessages(conversationId);
     });
@@ -695,11 +705,12 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
 
   @override
   Future<void> markConversationMessagesAsRead(String conversationId,
-      {String? senderIdFilter}) async {
+      {String? senderIdFilter,}) async {
     if (senderIdFilter != null && senderIdFilter.isNotEmpty) {
       await customStatement(
         "UPDATE messages SET status = 'read' "
-        "WHERE conversation_id = ? AND sender_id = ? AND status IN ('sent', 'delivered')",
+        'WHERE conversation_id = ? AND sender_id = ? '
+            "AND status IN ('sent', 'delivered')",
         [conversationId, senderIdFilter],
       );
     } else {
@@ -714,7 +725,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
 
   @override
   Future<void> markConversationMessagesAsDelivered(String conversationId,
-      {String? senderIdFilter}) async {
+      {String? senderIdFilter,}) async {
     if (senderIdFilter != null && senderIdFilter.isNotEmpty) {
       await customStatement(
         "UPDATE messages SET status = 'delivered' "
@@ -786,8 +797,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
   @override
   Stream<List<Message>> watchMessages(String conversationId) {
     final query = select(messages)
-      ..where(
-          (m) => m.conversationId.equals(conversationId) & m.isDeleted.equals(false))
+      ..where((m) =>
+          m.conversationId.equals(conversationId) & m.isDeleted.equals(false),)
       ..orderBy([
         (m) => OrderingTerm(
               expression: coalesce([m.serverTimestamp, m.clientTimestamp]),
@@ -810,10 +821,10 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
 
   @override
   Future<List<Message>> getMessagesByConversation(String conversationId,
-      {int limit = 50}) async {
+      {int limit = 50,}) async {
     final query = select(messages)
       ..where((m) =>
-          m.conversationId.equals(conversationId) & m.isDeleted.equals(false))
+          m.conversationId.equals(conversationId) & m.isDeleted.equals(false),)
       ..orderBy([
         (m) => OrderingTerm(
               expression: coalesce([m.serverTimestamp, m.clientTimestamp]),
@@ -911,7 +922,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
           if (timeDiff.inSeconds < 5) {
             final mergedMessage =
                 _preserveExistingAttachmentCaption(message, local);
-            // Preserve existing status if it's more advanced than incoming status.
+            // Preserve existing status if it's more advanced than incoming.
             final shouldPreserveStatus = _shouldPreserveStatus(
               local.status,
               mergedMessage.status.name,
@@ -1025,7 +1036,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
     await insertMessage(embeddedReply);
   }
 
-  /// Returns true if [existingStatus] should be preserved over [incomingStatus].
+  /// Returns true if [existingStatus] should be preserved over
+  /// [incomingStatus].
   ///
   /// Status hierarchy: sent < delivered < read
   /// Preserve existing status if it's more advanced than incoming.
@@ -1103,7 +1115,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
     return message.content.cipherText?.trim() ?? '';
   }
 
-  /// Converts a [Message] to data companion while preserving the specified status.
+  /// Converts a [Message] to data companion while preserving the specified
+  /// status.
   MessagesCompanion _messageToDataWithPreservedStatus(
     Message message,
     String preservedStatus,
@@ -1115,7 +1128,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
 
   /// Syncs reactions from an API message into the reactions table.
   Future<void> _syncReactions(
-      String messageId, List<Reaction> messageReactions) async {
+      String messageId, List<Reaction> messageReactions,) async {
     if (messageReactions.isEmpty) return;
     for (final reaction in messageReactions) {
       await into(reactions).insertOnConflictUpdate(
@@ -1165,8 +1178,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
     }
 
     // If not found by id, try to find by serverId
-    // This handles cases where socket events (e.g., pin, star) send the server ID
-    // but the local message was created with a client UUID as id
+    // This handles cases where socket events (e.g., pin, star) send the
+    // server ID but the local message was created with a client UUID as id
     final existingByServerId = await _getCanonicalMessageByServerId(messageId);
 
     if (existingByServerId != null) {
@@ -1187,7 +1200,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
   }) async {
     await transaction(() async {
       await (update(messages)
-              ..where((m) => m.conversationId.equals(conversationId)))
+            ..where((m) => m.conversationId.equals(conversationId)))
           .write(
         const MessagesCompanion(
           isPinned: Value(false),
@@ -1361,24 +1374,25 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
     // Reconstruct MessageContent based on encryption state.
     // Currently the API returns readable text in "ciphertext", so we always
     // set plainText for display. When real E2E encryption is added, encrypted
-    // messages without a decrypted plainText should use MessageContent.encrypted().
+    // messages without a decrypted plainText should use
+    // MessageContent.encrypted().
     final content = data.isEncrypted && data.contentNonce != null
         ? MessageContent(
             plainText: data.content,
             cipherText: data.content,
-            nonce: data.contentNonce!,
+            nonce: data.contentNonce,
           )
         : MessageContent(plainText: data.content);
 
     // Deserialize attachments from JSON string.
-    List<FileAttachment> attachments = const [];
+    var attachments = const <FileAttachment>[];
     if (data.attachmentsJson != null && data.attachmentsJson!.isNotEmpty) {
       try {
         final decoded = jsonDecode(data.attachmentsJson!) as List<dynamic>;
         attachments = decoded
             .map((e) => FileAttachment.fromJson(e as Map<String, dynamic>))
             .toList();
-      } catch (_) {
+      } on Object catch (_) {
         // Gracefully handle corrupted JSON — treat as no attachments.
       }
     }
@@ -1513,7 +1527,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
     );
   }
 
-  /// Batch-fetches participants for a list of conversation IDs, grouped by conversationId.
+  /// Batch-fetches participants for a list of conversation IDs, grouped by
+  /// conversationId.
   Future<Map<String, List<Participant>>> _getParticipantsByConversationIds(
     List<String> conversationIds,
   ) async {
@@ -1525,7 +1540,9 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
 
     final map = <String, List<Participant>>{};
     for (final row in results) {
-      map.putIfAbsent(row.conversationId, () => []).add(_participantFromData(row));
+      map
+          .putIfAbsent(row.conversationId, () => [])
+          .add(_participantFromData(row));
     }
     return map;
   }
@@ -1552,7 +1569,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
 
   @override
   Future<List<Participant>> getParticipantsForConversation(
-      String conversationId) async {
+      String conversationId,) async {
     final query = select(participants)
       ..where((p) => p.conversationId.equals(conversationId));
     final results = await query.get();
@@ -1796,10 +1813,11 @@ LazyDatabase _openConnection(
         if (encryptionConfig == null) return;
         if (encryptionConfig.isValid() == false) return;
 
-        // SQLite3MultipleCiphers (sqlite3mc) — SQLCipher-compatible encryption.
-        // The `hooks.user_defines.sqlite3.source: sqlite3mc` in pubspec.yaml
-        // bundles the SQLite3MultipleCiphers binary via build hooks (sqlite3 v3+).
-        // These pragmas make it byte-compatible with existing SQLCipher v4 databases.
+        // SQLite3MultipleCiphers (sqlite3mc) — SQLCipher-compatible
+        // encryption. The `hooks.user_defines.sqlite3.source: sqlite3mc`
+        // in pubspec.yaml bundles the SQLite3MultipleCiphers binary via
+        // build hooks (sqlite3 v3+). These pragmas make it byte-compatible
+        // with existing SQLCipher v4 databases.
         rawDb
           ..execute("PRAGMA cipher = 'sqlcipher'")
           ..execute('PRAGMA legacy = 4')
@@ -1814,5 +1832,5 @@ LazyDatabase _openConnection(
         rawDb.config.doubleQuotedStringLiterals = false;
       },
     );
-  }, openImmediately: true);
+  }, openImmediately: true,);
 }

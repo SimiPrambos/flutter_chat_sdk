@@ -1,6 +1,6 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_chat_sdk/src/chat.dart';
 import 'package:flutter_chat_sdk/src/flutter/chat_provider.dart';
-import 'package:flutter/widgets.dart';
 
 /// Extension methods on [BuildContext] for Chat access.
 extension ChatBuildContextExtension on BuildContext {

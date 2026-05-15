@@ -1,7 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/chat_event.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/conversation.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/message.dart';
-import 'package:equatable/equatable.dart';
 
 /// State of synchronization.
 class SyncState extends Equatable {

@@ -49,7 +49,6 @@ class FileAttachment extends Equatable {
       mimeType: json['mimeType'] as String?,
       pageCount: json['pageCount'] as int?,
       thumbnailUrl: json['thumbnailUrl'] as String?,
-      uploadStatus: FileUploadStatus.completed,
       localPath: json['localPath'] as String?,
       width: json['width'] as int?,
       height: json['height'] as int?,

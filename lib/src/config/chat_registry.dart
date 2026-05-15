@@ -33,7 +33,8 @@ class ChatRegistry {
   /// Creates a registry with a single adapter.
   ///
   /// [databaseEncryptionConfig] - Optional database encryption.
-  /// If provided, requires SQLite3MultipleCiphers (set `hooks.user_defines.sqlite3.source: sqlite3mc` in pubspec.yaml).
+  /// If provided, requires SQLite3MultipleCiphers (set
+  /// `hooks.user_defines.sqlite3.source: sqlite3mc` in pubspec.yaml).
   factory ChatRegistry.withAdapter({
     required ChatConfig config,
     required ChatAdapter adapter,

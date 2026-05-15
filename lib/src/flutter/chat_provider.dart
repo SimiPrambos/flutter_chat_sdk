@@ -1,5 +1,5 @@
-import 'package:flutter_chat_sdk/src/chat.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_chat_sdk/src/chat.dart';
 
 /// Provides a [Chat] instance to the widget tree.
 ///
@@ -35,7 +35,7 @@ class ChatProvider extends InheritedWidget {
         );
       }
       return true;
-    }());
+    }(), 'No ChatProvider found in widget tree.',);
     return provider!.chat;
   }
 

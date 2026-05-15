@@ -41,7 +41,8 @@ abstract class ChatDatabase implements OutboundQueueDatabase {
   /// Deletes a conversation.
   Future<void> deleteConversation(String conversationId);
 
-  /// Updates the last message info for a conversation and optionally increments the unread count.
+  /// Updates the last message info for a conversation and optionally
+  /// increments the unread count.
   Future<void> updateConversationLastMessage(
     String conversationId, {
     required String messageId,
@@ -51,19 +52,20 @@ abstract class ChatDatabase implements OutboundQueueDatabase {
 
   /// Resets a conversation's unread count to zero.
   ///
-  /// Called by [Chat.markAsRead] for optimistic local update so the
+  /// Called by `Chat.markAsRead` for optimistic local update so the
   /// unread badge clears immediately, before the server confirms.
   Future<void> resetConversationUnreadCount(String conversationId);
 
   /// Marks sent/delivered messages in a conversation as read.
   ///
-  /// Called when a conversation-level read receipt arrives (the other user opened
-  /// the chat), indicating they have seen the messages you sent.
+  /// Called when a conversation-level read receipt arrives (the other user
+  /// opened the chat), indicating they have seen the messages you sent.
   ///
   /// [senderIdFilter] — when provided, only messages with that sender_id are
   /// updated.  Pass the current user's ID so that only your own sent messages
   /// are promoted to 'read'; received messages are left unchanged.
-  Future<void> markConversationMessagesAsRead(String conversationId, {String? senderIdFilter});
+  Future<void> markConversationMessagesAsRead(String conversationId,
+      {String? senderIdFilter,});
 
   /// Marks sent messages in a conversation as delivered.
   ///
@@ -73,7 +75,8 @@ abstract class ChatDatabase implements OutboundQueueDatabase {
   /// [senderIdFilter] — when provided, only messages with that sender_id are
   /// updated.  Pass the current user's ID so that only your own sent messages
   /// are marked as delivered; received messages are left unchanged.
-  Future<void> markConversationMessagesAsDelivered(String conversationId, {String? senderIdFilter});
+  Future<void> markConversationMessagesAsDelivered(String conversationId,
+      {String? senderIdFilter,});
 
   // ═══════════════════════════════════════════════════════════════════════════
   // MESSAGE OPERATIONS
@@ -85,14 +88,15 @@ abstract class ChatDatabase implements OutboundQueueDatabase {
   /// Gets messages for a conversation (one-shot, not a stream).
   ///
   /// For reactive updates, use [watchMessages] instead.
-  Future<List<Message>> getMessagesByConversation(String conversationId, {int limit = 50});
+  Future<List<Message>> getMessagesByConversation(String conversationId,
+      {int limit = 50,});
 
   /// Gets a message by ID.
   Future<Message?> getMessage(String messageId);
 
   /// Inserts a message (with deduplication).
   /// Returns the actual primary key of the row — either the existing local
-  /// message's PK (if dedup matched) or [message.id] for new inserts.
+  /// message's PK (if dedup matched) or `message.id` for new inserts.
   Future<String> insertMessage(Message message);
 
   /// Updates a message.
@@ -111,8 +115,8 @@ abstract class ChatDatabase implements OutboundQueueDatabase {
 
   /// Replaces the currently pinned message in a conversation with [messageId].
   ///
-  /// After this call, at most one non-deleted message in the conversation should have
-  /// `isPinned == true`.
+  /// After this call, at most one non-deleted message in the conversation
+  /// should have `isPinned == true`.
   Future<void> replacePinnedMessage(
     String conversationId,
     String messageId, {
@@ -166,11 +170,12 @@ abstract class ChatDatabase implements OutboundQueueDatabase {
   // ═══════════════════════════════════════════════════════════════════════════
 
   /// Gets participants for a conversation.
-  Future<List<Participant>> getParticipantsForConversation(String conversationId);
+  Future<List<Participant>> getParticipantsForConversation(
+      String conversationId,);
 
   /// Replaces all participants for a conversation.
   Future<void> upsertParticipants(
-      String conversationId, List<Participant> participants);
+      String conversationId, List<Participant> participants,);
 
   /// Deletes all participants for a conversation.
   Future<void> deleteParticipants(String conversationId);

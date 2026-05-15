@@ -1,8 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/conversation.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/message.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/participant.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/reaction.dart';
-import 'package:equatable/equatable.dart';
 
 /// Base class for all chat events.
 abstract class ChatEvent extends Equatable {
@@ -235,8 +235,15 @@ class PinEvent extends ChatEvent {
   final String? pinnedBy;
 
   @override
-  List<Object?> get props =>
-      [eventId, timestamp, conversationId, messageId, isPinned, pinnedUntil, pinnedBy];
+  List<Object?> get props => [
+        eventId,
+        timestamp,
+        conversationId,
+        messageId,
+        isPinned,
+        pinnedUntil,
+        pinnedBy,
+      ];
 }
 
 /// Event for connection state change.

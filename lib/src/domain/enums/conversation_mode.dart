@@ -3,7 +3,7 @@ enum ConversationMode {
   /// Permanent conversation with no expiry.
   standard,
 
-  /// Temporary conversation that may expire (has [Conversation.expiresAt]).
+  /// Temporary conversation that may expire (has `Conversation.expiresAt`).
   ephemeral;
 
   static ConversationMode fromString(String value) {

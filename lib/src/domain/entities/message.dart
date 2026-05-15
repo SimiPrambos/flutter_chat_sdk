@@ -1,9 +1,9 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/file_attachment.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/message_content.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/reaction.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/message_status.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/message_type.dart';
-import 'package:equatable/equatable.dart';
 
 /// A chat message.
 class Message extends Equatable {

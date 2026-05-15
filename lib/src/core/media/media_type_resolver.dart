@@ -50,8 +50,9 @@ class MediaTypeResolver {
   String resolveExtension(String rawExtension, {String? fallbackFileName}) {
     final normalized = normalizeExtension(rawExtension);
     if (normalized.isNotEmpty) return normalized;
-    if (fallbackFileName != null)
+    if (fallbackFileName != null) {
       return extensionFromFileName(fallbackFileName);
+    }
     return '';
   }
 
@@ -166,10 +167,10 @@ class MediaTypeResolver {
 
   // ─── Attachment builder ──────────────────────────────────────────────────
 
-  /// Builds a [FileAttachment] from raw server data, normalizing [rawExtension]
-  /// and deriving [mimeType] consistently.
+  /// Builds a `FileAttachment` from raw server data, normalizing `rawExtension`
+  /// and deriving `mimeType` consistently.
   ///
-  /// This is the single entry point for constructing [FileAttachment] from
+  /// This is the single entry point for constructing `FileAttachment` from
   /// server responses or socket events.
   FileAttachment resolveAttachment({
     required String id,

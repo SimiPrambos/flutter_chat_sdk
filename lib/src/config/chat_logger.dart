@@ -41,6 +41,7 @@ class ChatLogger {
   static void _log(String level, String message) {
     if (!_enabled) return;
     final timestamp = DateTime.now().toIso8601String();
+    // Intentional console output for SDK debug logging — not production code.
     // ignore: avoid_print
     print('[$timestamp] [Chat] [$level] $message');
   }

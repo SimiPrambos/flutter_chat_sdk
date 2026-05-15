@@ -1,5 +1,6 @@
-import 'package:flutter_chat_sdk/chat.dart' show ChatRegistry;
-import 'package:flutter_chat_sdk/src/config/chat_registry.dart' show ChatRegistry;
+import 'package:flutter_chat_sdk/flutter_chat_sdk.dart' show ChatRegistry;
+import 'package:flutter_chat_sdk/src/config/chat_registry.dart'
+    show ChatRegistry;
 import 'package:flutter_chat_sdk/src/core/encryption/encryption_service.dart';
 
 /// No-op encryption service.

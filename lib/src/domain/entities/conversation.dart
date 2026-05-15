@@ -1,12 +1,12 @@
 // lib/src/domain/entities/conversation.dart
 
+import 'package:equatable/equatable.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/message.dart';
 import 'package:flutter_chat_sdk/src/domain/entities/participant.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/conversation_mode.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/conversation_status.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/conversation_type.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/participant_role.dart';
-import 'package:equatable/equatable.dart';
 
 /// A chat conversation (direct message or group).
 class Conversation extends Equatable {
@@ -64,8 +64,10 @@ class Conversation extends Equatable {
   }
 
   bool get hasDeletedParticipant {
-    if (isEphemeral) return false;
-    return myUserId != null && !participants.any((p) => p.userId != myUserId);
+    if (!isDirect || isEphemeral) return false;
+    return myUserId != null &&
+        participants.isNotEmpty &&
+        !participants.any((p) => p.userId != myUserId);
   }
 
   String get displayName {
@@ -148,9 +150,23 @@ class Conversation extends Equatable {
 
   @override
   List<Object?> get props => [
-        id, name, avatarUrl, type, mode, status, participants,
-        lastMessage, lastMessageAt, unreadCount, shareCode, expiresAt,
-        myRole, myUserId, metadata, createdAt, updatedAt,
+        id,
+        name,
+        avatarUrl,
+        type,
+        mode,
+        status,
+        participants,
+        lastMessage,
+        lastMessageAt,
+        unreadCount,
+        shareCode,
+        expiresAt,
+        myRole,
+        myUserId,
+        metadata,
+        createdAt,
+        updatedAt,
       ];
 }
 

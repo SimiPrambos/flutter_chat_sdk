@@ -1,6 +1,6 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/participant_role.dart';
 import 'package:flutter_chat_sdk/src/domain/enums/participant_status.dart';
-import 'package:equatable/equatable.dart';
 
 /// Participant in a chat room.
 class Participant extends Equatable {

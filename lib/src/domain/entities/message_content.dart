@@ -21,10 +21,8 @@ class MessageContent extends Equatable {
   /// decrypted yet. [displayText] will return `'[Encrypted message]'` until
   /// the content is decrypted and a new [MessageContent] is created with
   /// [plainText] set.
-  ///
-  // TODO: Use this constructor once real E2E encryption is implemented.
-  // Currently the API returns readable text in the `ciphertext` field, so
-  // mappers should use the general constructor with plainText set instead.
+  // Adapters should use the default constructor with plainText set until
+  // real E2E encryption is implemented on the backend side.
   const MessageContent.encrypted({
     required String this.cipherText,
     required String this.nonce,

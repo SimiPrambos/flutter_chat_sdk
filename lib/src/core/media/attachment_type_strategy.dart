@@ -1,10 +1,10 @@
 // packages/chat/lib/src/core/media/attachment_type_strategy.dart
 
-/// Strategy for customizing which file extensions are treated as each media type
-/// and for overriding MIME type lookups.
+/// Strategy for customizing which file extensions are treated as each media
+/// type and for overriding MIME type lookups.
 ///
-/// Extend [DefaultAttachmentTypeStrategy] for small customizations, or implement
-/// this interface to replace the defaults entirely.
+/// Extend [DefaultAttachmentTypeStrategy] for small customizations, or
+/// implement this interface to replace the defaults entirely.
 abstract class AttachmentTypeStrategy {
   const AttachmentTypeStrategy();
 
@@ -17,28 +17,44 @@ abstract class AttachmentTypeStrategy {
   /// Extensions that are treated as audio (without leading dot, lowercase).
   List<String> get audioExtensions;
 
-  /// Return a non-null MIME type to override the default lookup for [extension].
-  /// [extension] is already normalized (no dot, lowercase).
+  /// Return a non-null MIME type to override the default lookup for
+  /// [extension]. [extension] is already normalized (no dot, lowercase).
   String? mimeTypeOverride(String extension);
 }
 
-/// Default extension sets used by [MediaTypeResolver].
+/// Default extension sets used by `MediaTypeResolver`.
 class DefaultAttachmentTypeStrategy extends AttachmentTypeStrategy {
   const DefaultAttachmentTypeStrategy();
 
   @override
   List<String> get imageExtensions => const [
-        'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif',
+        'jpg',
+        'jpeg',
+        'png',
+        'gif',
+        'webp',
+        'bmp',
+        'svg',
+        'heic',
+        'heif',
       ];
 
   @override
   List<String> get videoExtensions => const [
-        'mp4', 'mov', 'avi', 'mkv', 'webm',
+        'mp4',
+        'mov',
+        'avi',
+        'mkv',
+        'webm',
       ];
 
   @override
   List<String> get audioExtensions => const [
-        'mp3', 'wav', 'aac', 'm4a', 'ogg',
+        'mp3',
+        'wav',
+        'aac',
+        'm4a',
+        'ogg',
       ];
 
   @override
