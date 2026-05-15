@@ -38,7 +38,6 @@ void main() {
       final conversation = await chat.createConversation(
         mode: ConversationMode.ephemeral,
         name: 'Secret Squad',
-        expiresIn: const Duration(hours: 24),
       );
 
       expect(conversation.id, isNotEmpty);

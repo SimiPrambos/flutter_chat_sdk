@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('PresenceResult', () {
     test('stores userId, active, and lastSeen', () {
-      final now = DateTime(2026, 4, 8, 12, 0, 0);
+      final now = DateTime(2026, 4, 8, 12);
       final result = PresenceResult(
         userId: 'user-1',
         active: true,
@@ -17,7 +17,7 @@ void main() {
     });
 
     test('supports equality', () {
-      final now = DateTime(2026, 4, 8, 12, 0, 0);
+      final now = DateTime(2026, 4, 8, 12);
       final a = PresenceResult(userId: 'user-1', active: true, lastSeen: now);
       final b = PresenceResult(userId: 'user-1', active: true, lastSeen: now);
 
@@ -25,8 +25,8 @@ void main() {
     });
 
     test('lastSeen can be null', () {
-      final result =
-          PresenceResult(userId: 'user-1', active: false, lastSeen: null);
+      const result =
+          PresenceResult(userId: 'user-1', active: false);
 
       expect(result.lastSeen, isNull);
     });

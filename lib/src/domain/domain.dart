@@ -27,7 +27,6 @@ export 'enums/sync_status.dart';
 export 'repositories/chat_repository.dart'
     show
         CreateConversationParams,
-        JoinConversationParams,
         PendingAttachment,
         SendMessageParams,
         UpdateConversationParams,

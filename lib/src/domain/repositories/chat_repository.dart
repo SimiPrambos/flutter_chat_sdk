@@ -12,7 +12,6 @@ class CreateConversationParams {
     required this.mode,
     this.name,
     this.participantIds,
-    this.expiresIn,
     this.extra,
   });
 
@@ -28,9 +27,6 @@ class CreateConversationParams {
 
   /// User IDs to add as initial participants.
   final List<String>? participantIds;
-
-  /// Auto-expiry duration for ephemeral conversations.
-  final Duration? expiresIn;
 
   /// Arbitrary backend-specific metadata.
   final Map<String, dynamic>? extra;
@@ -48,25 +44,6 @@ class UpdateConversationParams {
   final String? name;
 
   /// New avatar URL.
-  final String? avatarUrl;
-}
-
-/// Parameters for joining a conversation via share code.
-class JoinConversationParams {
-  /// Creates join parameters.
-  const JoinConversationParams({
-    required this.code,
-    required this.displayName,
-    this.avatarUrl,
-  });
-
-  /// Invite/share code for the conversation.
-  final String code;
-
-  /// Display name to use for this participant.
-  final String displayName;
-
-  /// Optional avatar URL for this participant.
   final String? avatarUrl;
 }
 
@@ -160,9 +137,6 @@ abstract class ChatRepository {
   Future<void> deleteConversation(String conversationId);
   Future<void> archiveConversation(String conversationId);
   Future<void> unarchiveConversation(String conversationId);
-  Future<String> getShareCode(String conversationId);
-  Future<Conversation> joinConversation(JoinConversationParams params);
-  Future<bool> validateConversationCode(String code);
 
   // PARTICIPANT OPERATIONS
   Future<void> addParticipants(String conversationId, List<String> userIds);

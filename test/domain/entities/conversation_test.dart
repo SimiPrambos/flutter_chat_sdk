@@ -6,7 +6,7 @@ void main() {
     const userId = 'user-123';
 
     test('creates a conversation with required fields', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
@@ -22,12 +22,11 @@ void main() {
     });
 
     test('isDirect returns true for direct conversations', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.direct,
         mode: ConversationMode.standard,
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.isDirect, isTrue);
@@ -35,12 +34,11 @@ void main() {
     });
 
     test('isGroup returns true for group conversations', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.isGroup, isTrue);
@@ -48,12 +46,11 @@ void main() {
     });
 
     test('isEphemeral returns true for ephemeral mode conversations', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.ephemeral,
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.isEphemeral, isTrue);
@@ -61,12 +58,11 @@ void main() {
     });
 
     test('isStandard returns true for standard mode conversations', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.isStandard, isTrue);
@@ -74,7 +70,7 @@ void main() {
     });
 
     test('isAdmin returns true when user is admin', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
@@ -86,13 +82,11 @@ void main() {
     });
 
     test('isActive returns true for active conversations', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
-        status: ConversationStatus.active,
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.isActive, isTrue);
@@ -100,13 +94,12 @@ void main() {
     });
 
     test('isArchived returns true for archived conversations', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         status: ConversationStatus.archived,
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.isArchived, isTrue);
@@ -114,12 +107,11 @@ void main() {
     });
 
     test('hasUnread returns true when unreadCount > 0', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         myUserId: userId,
-        myRole: ParticipantRole.member,
         unreadCount: 5,
       );
 
@@ -127,26 +119,24 @@ void main() {
     });
 
     test('displayName returns name when set', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         name: 'My Room',
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.displayName, 'My Room');
     });
 
     test('displayName returns other participant name for direct chats', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.direct,
         mode: ConversationMode.standard,
         myUserId: userId,
-        myRole: ParticipantRole.member,
-        participants: const [
+        participants: [
           Participant(
             id: 'part-1',
             userId: 'user-123',
@@ -164,13 +154,11 @@ void main() {
     });
 
     test('displayName returns "Chat" as fallback', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.direct,
         mode: ConversationMode.standard,
         myUserId: userId,
-        myRole: ParticipantRole.member,
-        participants: const [],
       );
 
       expect(conversation.displayName, 'Chat');
@@ -178,26 +166,24 @@ void main() {
 
     test('displayAvatar returns avatarUrl when set', () {
       const avatarUrl = 'https://example.com/avatar.png';
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         avatarUrl: avatarUrl,
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.displayAvatar, avatarUrl);
     });
 
     test('otherParticipant returns other user in direct chat', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.direct,
         mode: ConversationMode.standard,
         myUserId: userId,
-        myRole: ParticipantRole.member,
-        participants: const [
+        participants: [
           Participant(
             id: 'part-1',
             userId: 'user-123',
@@ -215,36 +201,33 @@ void main() {
     });
 
     test('otherParticipant returns null for group chats', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation.otherParticipant, isNull);
     });
 
     test('approvedParticipantsCount counts approved participants', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         myUserId: userId,
         myRole: ParticipantRole.admin,
-        participants: const [
+        participants: [
           Participant(
             id: 'part-1',
             userId: 'user-1',
             displayName: 'User 1',
-            status: ParticipantStatus.approved,
           ),
           Participant(
             id: 'part-2',
             userId: 'user-2',
             displayName: 'User 2',
-            status: ParticipantStatus.approved,
           ),
           Participant(
             id: 'part-3',
@@ -259,13 +242,13 @@ void main() {
     });
 
     test('onlineParticipantsCount counts online participants', () {
-      final conversation = Conversation(
+      const conversation = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         myUserId: userId,
         myRole: ParticipantRole.admin,
-        participants: const [
+        participants: [
           Participant(
             id: 'part-1',
             userId: 'user-1',
@@ -282,7 +265,6 @@ void main() {
             id: 'part-3',
             userId: 'user-3',
             displayName: 'User 3',
-            isOnline: false,
           ),
         ],
       );
@@ -291,13 +273,12 @@ void main() {
     });
 
     test('copyWith creates a new conversation with updated fields', () {
-      final original = Conversation(
+      const original = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         name: 'Old Name',
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       final updated = original.copyWith(
@@ -313,22 +294,20 @@ void main() {
     });
 
     test('props includes all fields for equality', () {
-      final conversation1 = Conversation(
+      const conversation1 = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         name: 'Test Room',
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
-      final conversation2 = Conversation(
+      const conversation2 = Conversation(
         id: 'room-123',
         type: ConversationType.group,
         mode: ConversationMode.standard,
         name: 'Test Room',
         myUserId: userId,
-        myRole: ParticipantRole.member,
       );
 
       expect(conversation1, equals(conversation2));
@@ -337,13 +316,12 @@ void main() {
     group('hasDeletedParticipant', () {
       test('returns true for direct conversation with only self as participant',
           () {
-        final conversation = Conversation(
+        const conversation = Conversation(
           id: 'room-123',
           type: ConversationType.direct,
           mode: ConversationMode.standard,
           myUserId: userId,
-          myRole: ParticipantRole.member,
-          participants: const [
+          participants: [
             Participant(
               id: 'part-1',
               userId: 'user-123',
@@ -358,13 +336,12 @@ void main() {
       test(
           'returns false for direct conversation with self and another participant',
           () {
-        final conversation = Conversation(
+        const conversation = Conversation(
           id: 'room-123',
           type: ConversationType.direct,
           mode: ConversationMode.standard,
           myUserId: userId,
-          myRole: ParticipantRole.member,
-          participants: const [
+          participants: [
             Participant(
               id: 'part-1',
               userId: 'user-123',
@@ -384,13 +361,12 @@ void main() {
       test(
           'returns false for group conversation even with only self as participant',
           () {
-        final conversation = Conversation(
+        const conversation = Conversation(
           id: 'room-123',
           type: ConversationType.group,
           mode: ConversationMode.standard,
           myUserId: userId,
-          myRole: ParticipantRole.member,
-          participants: const [
+          participants: [
             Participant(
               id: 'part-1',
               userId: 'user-123',
@@ -403,13 +379,11 @@ void main() {
       });
 
       test('returns false when myUserId is null', () {
-        final conversation = Conversation(
+        const conversation = Conversation(
           id: 'room-123',
           type: ConversationType.direct,
           mode: ConversationMode.standard,
-          myUserId: null,
-          myRole: ParticipantRole.member,
-          participants: const [
+          participants: [
             Participant(
               id: 'part-1',
               userId: 'user-123',

@@ -22,8 +22,6 @@ class Conversation extends Equatable {
     this.lastMessage,
     this.lastMessageAt,
     this.unreadCount = 0,
-    this.shareCode,
-    this.expiresAt,
     this.myRole = ParticipantRole.member,
     this.myUserId,
     this.metadata,
@@ -41,8 +39,6 @@ class Conversation extends Equatable {
   final Message? lastMessage;
   final DateTime? lastMessageAt;
   final int unreadCount;
-  final String? shareCode;
-  final DateTime? expiresAt;
   final ParticipantRole myRole;
   final String? myUserId;
   final Map<String, dynamic>? metadata;
@@ -58,13 +54,8 @@ class Conversation extends Equatable {
   bool get isArchived => status == ConversationStatus.archived;
   bool get hasUnread => unreadCount > 0;
 
-  bool get isExpired {
-    if (expiresAt == null) return false;
-    return DateTime.now().isAfter(expiresAt!);
-  }
-
   bool get hasDeletedParticipant {
-    if (!isDirect || isEphemeral) return false;
+    if (!isDirect) return false;
     return myUserId != null &&
         participants.isNotEmpty &&
         !participants.any((p) => p.userId != myUserId);
@@ -119,8 +110,6 @@ class Conversation extends Equatable {
     Message? lastMessage,
     DateTime? lastMessageAt,
     int? unreadCount,
-    String? shareCode,
-    DateTime? expiresAt,
     ParticipantRole? myRole,
     String? myUserId,
     Map<String, dynamic>? metadata,
@@ -138,8 +127,6 @@ class Conversation extends Equatable {
       lastMessage: lastMessage ?? this.lastMessage,
       lastMessageAt: lastMessageAt ?? this.lastMessageAt,
       unreadCount: unreadCount ?? this.unreadCount,
-      shareCode: shareCode ?? this.shareCode,
-      expiresAt: expiresAt ?? this.expiresAt,
       myRole: myRole ?? this.myRole,
       myUserId: myUserId ?? this.myUserId,
       metadata: metadata ?? this.metadata,
@@ -160,8 +147,6 @@ class Conversation extends Equatable {
         lastMessage,
         lastMessageAt,
         unreadCount,
-        shareCode,
-        expiresAt,
         myRole,
         myUserId,
         metadata,

@@ -2,6 +2,7 @@
 ///
 /// These tests simulate the complete flow of sending a message
 /// as documented in docs/chat-package-guide.md.
+library;
 import 'dart:async';
 
 import 'package:flutter_chat_sdk/src/chat.dart';
@@ -264,7 +265,7 @@ void main() {
         expect(messages, hasLength(1));
         expect(messages.first.attachments, hasLength(1));
         expect(messages.first.attachments.first.url,
-            'https://example.com/doc.pdf');
+            'https://example.com/doc.pdf',);
         expect(messages.first.content.plainText, 'Japan');
       },
     );
@@ -440,7 +441,7 @@ void main() {
       const roomId = 'room-123';
 
       final sentIds = <String>[];
-      for (int i = 0; i < 5; i++) {
+      for (var i = 0; i < 5; i++) {
         final msg = await chat.sendMessage(
           conversationId: roomId,
           content: 'Message $i',
@@ -688,7 +689,7 @@ class _AttachmentResponseDropsContentAdapter extends FakeChatAdapter {
       serverTimestamp: DateTime.now(),
       serverId: 'srv-${DateTime.now().millisecondsSinceEpoch}',
       status: MessageStatus.sent,
-      attachments: [
+      attachments: const [
         FileAttachment(
           id: 'file-1',
           url: 'https://example.com/doc.pdf',

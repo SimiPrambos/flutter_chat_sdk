@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.1.2
+
+### Breaking Changes
+
+- Removed `Conversation.shareCode` and `Conversation.expiresAt` fields — these were specific to a particular backend and do not belong in a backend-agnostic SDK
+- Removed `CreateConversationParams.expiresIn` parameter
+- Removed `JoinConversationParams` class
+- Removed `getShareCode()`, `joinConversation()`, and `validateConversationCode()` from `ChatRepository`, `ChatAdapter`, and `Chat` — join-by-code is a backend-specific feature that should be implemented in the adapter layer
+- Removed `Chat.joinConversation()` and `Chat.getShareCode()` from the public API
+- Database schema bumped to v8: `share_code` and `expires_at` columns are dropped from the `conversations` table (automatic migration runs on first launch)
+
+### Bug Fixes
+
+- `Chat.createConversation()` now throws a clear `StateError` instead of crashing with a null pointer if the adapter returns `null` for a newly created conversation
+
+### Code Quality
+
+- `ConversationMode.fromString()` now only accepts `'standard'` and `'ephemeral'` — removed undocumented legacy string aliases
+- Removed an internal one-time data migration that was not applicable to new installations
+- Cleaned up internal comments that referenced implementation details of a specific backend
+
 ## 0.1.1
 
 ### Bug Fixes

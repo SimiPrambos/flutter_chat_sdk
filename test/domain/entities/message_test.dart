@@ -10,7 +10,7 @@ void main() {
         conversationId: 'room-123',
         senderId: 'user-123',
         content: const MessageContent(plainText: 'Hello'),
-        clientTimestamp: DateTime(2024, 1, 1),
+        clientTimestamp: DateTime(2024),
       );
 
       expect(message.id, 'msg-123');
@@ -28,7 +28,6 @@ void main() {
         senderId: 'user-1',
         content: const MessageContent(plainText: 'Test'),
         clientTimestamp: DateTime.now(),
-        status: MessageStatus.pending,
       );
 
       final sending = Message(
@@ -132,7 +131,7 @@ void main() {
     });
 
     test('timestamp returns serverTimestamp when available', () {
-      final clientTime = DateTime(2024, 1, 1, 10, 0);
+      final clientTime = DateTime(2024, 1, 1, 10);
       final serverTime = DateTime(2024, 1, 1, 10, 1);
 
       final message = Message(
@@ -148,7 +147,7 @@ void main() {
     });
 
     test('timestamp returns clientTimestamp when serverTimestamp is null', () {
-      final clientTime = DateTime(2024, 1, 1, 10, 0);
+      final clientTime = DateTime(2024, 1, 1, 10);
 
       final message = Message(
         id: 'msg-1',
@@ -167,7 +166,7 @@ void main() {
         conversationId: 'room-1',
         senderId: 'user-1',
         content: const MessageContent(plainText: 'Test'),
-        clientTimestamp: DateTime(2024, 1, 1),
+        clientTimestamp: DateTime(2024),
       );
 
       final updated = original.copyWith(
@@ -187,7 +186,7 @@ void main() {
         conversationId: 'room-1',
         senderId: 'user-1',
         content: const MessageContent(plainText: 'Test'),
-        clientTimestamp: DateTime(2024, 1, 1),
+        clientTimestamp: DateTime(2024),
       );
 
       final message2 = Message(
@@ -195,7 +194,7 @@ void main() {
         conversationId: 'room-1',
         senderId: 'user-1',
         content: const MessageContent(plainText: 'Test'),
-        clientTimestamp: DateTime(2024, 1, 1),
+        clientTimestamp: DateTime(2024),
       );
 
       expect(message1, equals(message2));
@@ -204,14 +203,14 @@ void main() {
 
   group('MessageContent', () {
     test('displayText returns plainText for text messages', () {
-      final content = MessageContent(plainText: 'Hello World');
+      const content = MessageContent(plainText: 'Hello World');
       expect(content.displayText, 'Hello World');
     });
   });
 
   group('Reaction', () {
     test('creates a reaction with required fields', () {
-      final reaction = const Reaction(
+      const reaction = Reaction(
         id: 'react-1',
         userId: 'user-1',
         emoji: '👍',

@@ -130,26 +130,6 @@ class MockChatAdapter implements ChatAdapter {
   Future<void> unarchiveConversation(String conversationId) async {}
 
   @override
-  Future<String> getShareCode(String conversationId) async =>
-      'MOCK-$conversationId';
-
-  @override
-  Future<Conversation> joinConversation(JoinConversationParams params) async {
-    final conversation = Conversation(
-      id: 'conv-${DateTime.now().millisecondsSinceEpoch}',
-      type: ConversationType.group,
-      mode: ConversationMode.ephemeral,
-      name: params.displayName,
-    );
-    _conversations[conversation.id] = conversation;
-    _messages[conversation.id] = [];
-    return conversation;
-  }
-
-  @override
-  Future<bool> validateConversationCode(String code) async => true;
-
-  @override
   Future<void> addParticipants(
     String conversationId,
     List<String> userIds,

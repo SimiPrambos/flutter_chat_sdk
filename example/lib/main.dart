@@ -16,8 +16,7 @@ void main() async {
   await chat.connect();
 
   // Seed a demo conversation
-  final adapter = chat.registry.adapter as MockChatAdapter;
-  adapter.simulateIncomingMessage(
+  (chat.registry.adapter as MockChatAdapter).simulateIncomingMessage(
     conversationId: 'demo',
     senderId: 'user-2',
     content: 'Hello from the example!',
@@ -27,7 +26,7 @@ void main() async {
 }
 
 class ChatExampleApp extends StatelessWidget {
-  const ChatExampleApp({super.key, required this.chat});
+  const ChatExampleApp({required this.chat, super.key});
   final Chat chat;
 
   @override
@@ -40,7 +39,7 @@ class ChatExampleApp extends StatelessWidget {
 }
 
 class ConversationListScreen extends StatelessWidget {
-  const ConversationListScreen({super.key, required this.chat});
+  const ConversationListScreen({required this.chat, super.key});
   final Chat chat;
 
   @override

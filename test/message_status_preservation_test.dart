@@ -3,11 +3,12 @@
 /// This test verifies that when messages are synced from the server,
 /// existing message statuses (delivered, read) are not overwritten
 /// with the default 'sent' status from the sync API.
+library;
 import 'package:flutter_chat_sdk/flutter_chat_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'helpers/test_helpers.dart';
 import 'helpers/mock_adapters.dart';
+import 'helpers/test_helpers.dart';
 
 void main() {
   group('Message Status Preservation', () {
@@ -44,11 +45,10 @@ void main() {
         serverId: 'server-msg-1',
         conversationId: roomId,
         senderId: 'user-123',
-        content: MessageContent.plain('Hello'),
-        type: MessageType.text,
+        content: const MessageContent.plain('Hello'),
         status: MessageStatus.delivered, // Higher status
-        clientTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
-        serverTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
+        clientTimestamp: DateTime(2025, 1, 1, 10),
+        serverTimestamp: DateTime(2025, 1, 1, 10),
       );
 
       // Insert the message with delivered status
@@ -67,11 +67,10 @@ void main() {
         serverId: 'server-msg-1',
         conversationId: roomId,
         senderId: 'user-123',
-        content: MessageContent.plain('Hello'),
-        type: MessageType.text,
+        content: const MessageContent.plain('Hello'),
         status: MessageStatus.sent, // Lower status from sync API
-        clientTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
-        serverTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
+        clientTimestamp: DateTime(2025, 1, 1, 10),
+        serverTimestamp: DateTime(2025, 1, 1, 10),
       );
 
       // Insert the sync message (should preserve delivered status)
@@ -96,11 +95,10 @@ void main() {
         serverId: 'server-msg-2',
         conversationId: roomId,
         senderId: 'user-123',
-        content: MessageContent.plain('World'),
-        type: MessageType.text,
+        content: const MessageContent.plain('World'),
         status: MessageStatus.read, // Highest status
-        clientTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
-        serverTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
+        clientTimestamp: DateTime(2025, 1, 1, 10),
+        serverTimestamp: DateTime(2025, 1, 1, 10),
       );
 
       await database.insertMessage(originalMessage);
@@ -115,11 +113,10 @@ void main() {
         serverId: 'server-msg-2',
         conversationId: roomId,
         senderId: 'user-123',
-        content: MessageContent.plain('World'),
-        type: MessageType.text,
+        content: const MessageContent.plain('World'),
         status: MessageStatus.sent, // Lower status from sync API
-        clientTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
-        serverTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
+        clientTimestamp: DateTime(2025, 1, 1, 10),
+        serverTimestamp: DateTime(2025, 1, 1, 10),
       );
 
       await database.insertMessage(syncMessage);
@@ -142,11 +139,10 @@ void main() {
         serverId: 'server-msg-3',
         conversationId: roomId,
         senderId: 'other-user',
-        content: MessageContent.plain('Hi'),
-        type: MessageType.text,
+        content: const MessageContent.plain('Hi'),
         status: MessageStatus.sent, // Lower status
-        clientTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
-        serverTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
+        clientTimestamp: DateTime(2025, 1, 1, 10),
+        serverTimestamp: DateTime(2025, 1, 1, 10),
       );
 
       await database.insertMessage(originalMessage);
@@ -161,11 +157,10 @@ void main() {
         serverId: 'server-msg-3',
         conversationId: roomId,
         senderId: 'other-user',
-        content: MessageContent.plain('Hi'),
-        type: MessageType.text,
+        content: const MessageContent.plain('Hi'),
         status: MessageStatus.delivered, // Higher status from socket
-        clientTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
-        serverTimestamp: DateTime(2025, 1, 1, 10, 0, 0),
+        clientTimestamp: DateTime(2025, 1, 1, 10),
+        serverTimestamp: DateTime(2025, 1, 1, 10),
       );
 
       await database.insertMessage(updatedMessage);

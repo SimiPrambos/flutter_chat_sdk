@@ -120,18 +120,6 @@ abstract class SocketChatAdapter implements ChatAdapter {
       throw UnimplementedError();
 
   @override
-  Future<String> getShareCode(String conversationId) =>
-      throw UnimplementedError();
-
-  @override
-  Future<Conversation> joinConversation(JoinConversationParams params) =>
-      throw UnimplementedError();
-
-  @override
-  Future<bool> validateConversationCode(String code) =>
-      throw UnimplementedError();
-
-  @override
   Future<void> addParticipants(
     String conversationId,
     List<String> userIds,

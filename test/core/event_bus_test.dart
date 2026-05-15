@@ -53,8 +53,9 @@ void main() {
       final subscription =
           eventBus.on<MessageEvent>().listen(messageEvents.add);
 
-      eventBus.emit(messageEvent);
-      eventBus.emit(typingEvent);
+      eventBus
+        ..emit(messageEvent)
+        ..emit(typingEvent);
 
       await Future<void>.delayed(const Duration(milliseconds: 10));
       await subscription.cancel();
@@ -144,12 +145,12 @@ void main() {
         timestamp: DateTime.now(),
         userId: 'user-1',
         isOnline: true,
-        lastSeenAt: DateTime(2024, 1, 1),
+        lastSeenAt: DateTime(2024),
       );
 
       expect(event.userId, 'user-1');
       expect(event.isOnline, isTrue);
-      expect(event.lastSeenAt, DateTime(2024, 1, 1));
+      expect(event.lastSeenAt, DateTime(2024));
     });
 
     test('ReceiptEvent contains receipt info', () {
@@ -169,7 +170,7 @@ void main() {
     });
 
     test('ReactionEvent contains reaction info', () {
-      final reaction = const Reaction(
+      const reaction = Reaction(
         id: 'react-1',
         userId: 'user-1',
         emoji: '👍',
@@ -231,11 +232,10 @@ Message createTestMessage({String? id}) {
 }
 
 Conversation createTestConversation() {
-  return Conversation(
+  return const Conversation(
     id: 'room-1',
     type: ConversationType.group,
     mode: ConversationMode.standard,
     myUserId: 'user-1',
-    myRole: ParticipantRole.member,
   );
 }

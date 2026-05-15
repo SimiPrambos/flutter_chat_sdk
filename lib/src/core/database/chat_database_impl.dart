@@ -7,7 +7,6 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_chat_sdk/src/config/chat_logger.dart';
 import 'package:flutter_chat_sdk/src/core/database/chat_database.dart';
 import 'package:flutter_chat_sdk/src/core/queue/outbound_queue.dart';
 import 'package:flutter_chat_sdk/src/core/security/database_key_config.dart';
@@ -63,8 +62,6 @@ class Conversations extends Table {
   TextColumn get mode => text()();
   TextColumn get status => text()();
   IntColumn get unreadCount => integer().withDefault(const Constant(0))();
-  TextColumn get shareCode => text().nullable()();
-  DateTimeColumn get expiresAt => dateTime().nullable()();
   TextColumn get myRole => text()();
   TextColumn get lastMessageId => text().nullable()();
   DateTimeColumn get lastMessageAt => dateTime().nullable()();
@@ -173,7 +170,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
   }) : super(_openConnection(databasePath, encryptionConfig));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -279,6 +276,16 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
             // Recreate with the new schema via Drift's createAll
             await m.createAll();
             await _createIndexes();
+          }
+          // Migration from v7 to v8: drop share_code and expires_at columns
+          // from conversations — these were backend-specific fields.
+          if (from < 8) {
+            await customStatement(
+              'ALTER TABLE conversations DROP COLUMN share_code',
+            );
+            await customStatement(
+              'ALTER TABLE conversations DROP COLUMN expires_at',
+            );
           }
         },
       );
@@ -396,51 +403,7 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
 
   @override
   Future<void> initialize() async {
-    // Test database connection
     await customSelect('SELECT 1').get();
-
-    // One-time migration: delete ghost mode rooms with null expiresAt
-    // These rooms were synced before the expiresAt field was added
-    await _migrateGhostRoomExpiration();
-  }
-
-  /// One-time migration to delete ephemeral conversations with null expiresAt.
-  ///
-  /// These conversations were synced before the expiresAt field was added to
-  /// the model. Deleting them forces a re-sync from the server with the
-  /// updated data.
-  Future<void> _migrateGhostRoomExpiration() async {
-    final result = await customSelect('''
-      SELECT COUNT(*) as count FROM conversations
-      WHERE mode = 'ghost_mode' AND expires_at IS NULL
-    ''').getSingle();
-
-    final count = result.data['count'] as int;
-    if (count > 0) {
-      ChatLogger.debug(
-          '[DB Migration] Found $count ephemeral conversations '
-            'with null expiresAt, deleting...',);
-
-      // Delete all ephemeral conversations with null expiresAt
-      await customStatement('''
-        DELETE FROM conversations
-        WHERE mode = 'ghost_mode' AND expires_at IS NULL
-      ''');
-
-      // Also delete orphaned participants and messages
-      await customStatement('''
-        DELETE FROM participants
-        WHERE conversation_id NOT IN (SELECT id FROM conversations)
-      ''');
-
-      await customStatement('''
-        DELETE FROM messages
-        WHERE conversation_id NOT IN (SELECT id FROM conversations)
-      ''');
-
-      ChatLogger.debug(
-          '[DB Migration] Complete: deleted $count ephemeral conversations',);
-    }
   }
 
   // ==========================================================================
@@ -583,11 +546,9 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
       var data = _conversationToData(conversation);
 
       if (existing != null) {
-        // Keep the newer-or-equal local
-        // lastMessageAt/lastMessageId/unreadCount.
-        // Use !isBefore (≥) instead of isAfter (>) so that when
-        // receiveJoinNewRoom arrives after _handleMessageEvent already stamped
-        // lastMessageAt (equal
+        // Keep the newer-or-equal local lastMessageAt/lastMessageId/unreadCount.
+        // Use !isBefore (≥) instead of isAfter (>) so that when a join event
+        // arrives after the message event already stamped lastMessageAt (equal
         // timestamps), the existing lastMessageId is NOT overwritten with null.
         if (existing.lastMessageAt != null &&
             (conversation.lastMessageAt == null ||
@@ -609,7 +570,6 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
             name: Value(existing.name),
             type: Value(existing.type),
             mode: Value(existing.mode),
-            expiresAt: Value(existing.expiresAt),
             createdAt: Value(existing.createdAt),
           );
         }
@@ -672,10 +632,8 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
     // messages) from overwriting the conversation's last message.
     if (incrementUnread) {
       // Use IS (SQLite null-safe equality) so that when the conversation was
-      // already inserted with this exact last_message_id (e.g.
-      // receiveJoinNewRoom carried the full conversation payload including
-      // lastMessage before this call ran), the unread count is not incremented
-      // a second time.
+      // already inserted with this exact last_message_id, the unread count is
+      // not incremented a second time.
       await customStatement(
         'UPDATE conversations SET last_message_id = ?, last_message_at = ?, '
         'unread_count = CASE WHEN last_message_id IS ? '
@@ -1340,8 +1298,6 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
       mode: ConversationMode.fromString(data.mode),
       status: ConversationStatus.values.byName(data.status),
       unreadCount: data.unreadCount,
-      shareCode: data.shareCode,
-      expiresAt: data.expiresAt,
       myRole: ParticipantRole.values.byName(data.myRole),
       participants: participants,
       lastMessage: lastMessage,
@@ -1360,8 +1316,6 @@ class ChatDatabaseImpl extends _$ChatDatabaseImpl implements ChatDatabase {
       mode: conversation.mode.name,
       status: conversation.status.name,
       unreadCount: Value(conversation.unreadCount),
-      shareCode: Value(conversation.shareCode),
-      expiresAt: Value(conversation.expiresAt),
       myRole: conversation.myRole.name,
       lastMessageId: Value(conversation.lastMessage?.id),
       lastMessageAt: Value(conversation.lastMessageAt),

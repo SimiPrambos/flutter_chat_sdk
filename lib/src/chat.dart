@@ -363,16 +363,10 @@ class Chat {
       List<Conversation> conversations, ConversationFilter? filter,) {
     if (_userId == null) return const [];
 
-    var filtered = conversations
+    return conversations
         .where((conversation) => conversation.id.trim().isNotEmpty)
-        .map(_stampCurrentUser);
-
-    if (filter?.mode == ConversationMode.ephemeral) {
-      filtered =
-          filtered.where((e) => !e.isExpired && _isCurrentUserApproved(e));
-    }
-
-    return filtered.toList();
+        .map(_stampCurrentUser)
+        .toList();
   }
 
   /// Returns true if the current user's participant status is approved.
@@ -407,36 +401,15 @@ class Chat {
     return conversation != null ? _stampCurrentUser(conversation) : null;
   }
 
-  /// Join conversation via code.
-  Future<Conversation> joinConversation({
-    required String code,
-    required String displayName,
-    String? avatarUrl,
-  }) async {
-    _ensureInitialized();
-    final conversation = await _registry.adapter.joinConversation(
-      JoinConversationParams(
-        code: code,
-        displayName: displayName,
-        avatarUrl: avatarUrl,
-      ),
-    );
-    await _database.insertConversation(conversation);
-    return _stampCurrentUser(conversation);
-  }
-
   /// Create a new conversation.
   ///
   /// [mode] is required. [type] defaults to [ConversationType.group].
-  /// [expiresIn] is optional expiry duration for ephemeral conversations.
   Future<Conversation> createConversation({
     required ConversationMode mode,
     ConversationType type = ConversationType.group,
     String? name,
     List<String>? participantIds,
-    Duration? expiresIn,
-    Map<String, dynamic>?
-        extra, // For future extensibility (e.g. displayName, avatarUrl)
+    Map<String, dynamic>? extra,
   }) async {
     _ensureInitialized();
     final createdConversation = await _registry.adapter.createConversation(
@@ -445,20 +418,19 @@ class Chat {
         mode: mode,
         name: name,
         participantIds: participantIds,
-        expiresIn: expiresIn,
         extra: extra,
       ),
     );
     final conversation =
         await _registry.adapter.getConversation(createdConversation.id);
-    await _database.insertConversation(conversation!);
+    if (conversation == null) {
+      throw StateError(
+        'Adapter returned null for conversation ${createdConversation.id} '
+        'immediately after creating it.',
+      );
+    }
+    await _database.insertConversation(conversation);
     return _stampCurrentUser(conversation);
-  }
-
-  /// Get share code for conversation.
-  Future<String> getShareCode(String conversationId) {
-    _ensureInitialized();
-    return _registry.adapter.getShareCode(conversationId);
   }
 
   /// Delete/leave conversation.

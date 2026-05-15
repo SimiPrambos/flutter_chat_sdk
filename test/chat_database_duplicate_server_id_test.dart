@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_chat_sdk/src/core/database/chat_database_impl.dart';
 import 'package:flutter_chat_sdk/src/domain/domain.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -47,7 +47,6 @@ void main() {
         id: roomId,
         type: ConversationType.direct,
         mode: ConversationMode.standard,
-        participants: const [],
         createdAt: createdAt,
         updatedAt: createdAt,
       ),
@@ -100,8 +99,7 @@ void main() {
         serverId: serverId,
         conversationId: roomId,
         senderId: 'me',
-        content: MessageContent.plain('fresh sync copy'),
-        type: MessageType.text,
+        content: const MessageContent.plain('fresh sync copy'),
         status: MessageStatus.delivered,
         clientTimestamp: createdAt.add(const Duration(seconds: 2)),
         serverTimestamp: createdAt.add(const Duration(seconds: 2)),
@@ -112,7 +110,7 @@ void main() {
 
     expect(retainedId, isNot('incoming-sync-copy'));
     expect(messages.where((message) => message.serverId == serverId),
-        hasLength(1));
+        hasLength(1),);
     expect(messages.single.serverId, serverId);
     expect(messages.single.content.plainText, 'fresh sync copy');
     expect(messages.single.status, MessageStatus.delivered);

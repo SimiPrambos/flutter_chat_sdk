@@ -166,29 +166,6 @@ class FakeChatAdapter implements ChatAdapter {
   }
 
   @override
-  Future<String> getShareCode(String conversationId) async =>
-      'SHARE-$conversationId';
-
-  @override
-  Future<Conversation> joinConversation(JoinConversationParams params) async {
-    final conversation = Conversation(
-      id: 'conversation-${DateTime.now().millisecondsSinceEpoch}',
-      type: ConversationType.group,
-      mode: ConversationMode.ephemeral,
-      name: params.displayName,
-      myUserId: userId,
-    );
-    _conversations[conversation.id] = conversation;
-    messages[conversation.id] = [];
-    _emitConversationUpdate(conversation, ConversationUpdateType.created);
-    return conversation;
-  }
-
-  @override
-  Future<bool> validateConversationCode(String code) async =>
-      code.startsWith('SHARE-');
-
-  @override
   Future<void> addParticipants(
     String conversationId,
     List<String> userIds,

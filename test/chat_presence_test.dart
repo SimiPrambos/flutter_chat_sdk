@@ -41,8 +41,9 @@ void main() {
     });
 
     test('stopHeartbeat does not throw after start', () {
-      chat.startHeartbeat();
-      chat.stopHeartbeat();
+      chat
+        ..startHeartbeat()
+        ..stopHeartbeat();
     });
 
     test('stopHeartbeat is safe without start', () {

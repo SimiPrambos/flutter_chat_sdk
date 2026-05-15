@@ -1,9 +1,9 @@
 name: flutter_chat_sdk
 description: >-
-  A backend-agnostic Flutter chat SDK with offline-first support,
-  real-time sync, and a persistent outbound queue that survives app restarts.
-  Bring your own backend via the ChatAdapter interface.
-version: 0.1.1
+  A backend-agnostic Flutter chat SDK with offline-first support, real-time
+  sync, and a persistent outbound queue that survives app restarts. Bring your
+  own backend via the ChatAdapter interface.
+version: 0.1.2
 homepage: https://github.com/SimiPrambos/flutter_chat_sdk
 repository: https://github.com/SimiPrambos/flutter_chat_sdk
 issue_tracker: https://github.com/SimiPrambos/flutter_chat_sdk/issues
@@ -13,25 +13,25 @@ environment:
   flutter: ">=3.0.0"
 
 dependencies:
+  collection: ^1.19.1
+  drift: ^2.31.0
+  equatable: ^2.0.8
   flutter:
     sdk: flutter
-  equatable: ^2.0.8
-  drift: ^2.31.0
-  path_provider: ^2.1.5
-  path: ^1.9.1
-  uuid: ^4.5.3
-  collection: ^1.19.1
-  meta: ^1.16.0
   intl: ^0.20.2
+  meta: ^1.16.0
+  path: ^1.9.1
+  path_provider: ^2.1.5
   sqlite3: ^2.9.4
+  uuid: ^4.5.3
 
 dev_dependencies:
+  build_runner: ^2.15.0
+  drift_dev: ^2.31.0
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.5
   very_good_analysis: ^7.0.0
-  drift_dev: ^2.31.0
-  build_runner: ^2.15.0
 
 hooks:
   user_defines:

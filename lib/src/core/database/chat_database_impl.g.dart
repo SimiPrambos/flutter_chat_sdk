@@ -1047,18 +1047,6 @@ class $ConversationsTable extends Conversations
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
-  static const VerificationMeta _shareCodeMeta =
-      const VerificationMeta('shareCode');
-  @override
-  late final GeneratedColumn<String> shareCode = GeneratedColumn<String>(
-      'share_code', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _expiresAtMeta =
-      const VerificationMeta('expiresAt');
-  @override
-  late final GeneratedColumn<DateTime> expiresAt = GeneratedColumn<DateTime>(
-      'expires_at', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _myRoleMeta = const VerificationMeta('myRole');
   @override
   late final GeneratedColumn<String> myRole = GeneratedColumn<String>(
@@ -1097,8 +1085,6 @@ class $ConversationsTable extends Conversations
         mode,
         status,
         unreadCount,
-        shareCode,
-        expiresAt,
         myRole,
         lastMessageId,
         lastMessageAt,
@@ -1151,14 +1137,6 @@ class $ConversationsTable extends Conversations
           _unreadCountMeta,
           unreadCount.isAcceptableOrUnknown(
               data['unread_count']!, _unreadCountMeta));
-    }
-    if (data.containsKey('share_code')) {
-      context.handle(_shareCodeMeta,
-          shareCode.isAcceptableOrUnknown(data['share_code']!, _shareCodeMeta));
-    }
-    if (data.containsKey('expires_at')) {
-      context.handle(_expiresAtMeta,
-          expiresAt.isAcceptableOrUnknown(data['expires_at']!, _expiresAtMeta));
     }
     if (data.containsKey('my_role')) {
       context.handle(_myRoleMeta,
@@ -1213,10 +1191,6 @@ class $ConversationsTable extends Conversations
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
       unreadCount: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}unread_count'])!,
-      shareCode: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}share_code']),
-      expiresAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}expires_at']),
       myRole: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}my_role'])!,
       lastMessageId: attachedDatabase.typeMapping
@@ -1245,8 +1219,6 @@ class ConversationData extends DataClass
   final String mode;
   final String status;
   final int unreadCount;
-  final String? shareCode;
-  final DateTime? expiresAt;
   final String myRole;
   final String? lastMessageId;
   final DateTime? lastMessageAt;
@@ -1260,8 +1232,6 @@ class ConversationData extends DataClass
       required this.mode,
       required this.status,
       required this.unreadCount,
-      this.shareCode,
-      this.expiresAt,
       required this.myRole,
       this.lastMessageId,
       this.lastMessageAt,
@@ -1281,12 +1251,6 @@ class ConversationData extends DataClass
     map['mode'] = Variable<String>(mode);
     map['status'] = Variable<String>(status);
     map['unread_count'] = Variable<int>(unreadCount);
-    if (!nullToAbsent || shareCode != null) {
-      map['share_code'] = Variable<String>(shareCode);
-    }
-    if (!nullToAbsent || expiresAt != null) {
-      map['expires_at'] = Variable<DateTime>(expiresAt);
-    }
     map['my_role'] = Variable<String>(myRole);
     if (!nullToAbsent || lastMessageId != null) {
       map['last_message_id'] = Variable<String>(lastMessageId);
@@ -1310,12 +1274,6 @@ class ConversationData extends DataClass
       mode: Value(mode),
       status: Value(status),
       unreadCount: Value(unreadCount),
-      shareCode: shareCode == null && nullToAbsent
-          ? const Value.absent()
-          : Value(shareCode),
-      expiresAt: expiresAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(expiresAt),
       myRole: Value(myRole),
       lastMessageId: lastMessageId == null && nullToAbsent
           ? const Value.absent()
@@ -1339,8 +1297,6 @@ class ConversationData extends DataClass
       mode: serializer.fromJson<String>(json['mode']),
       status: serializer.fromJson<String>(json['status']),
       unreadCount: serializer.fromJson<int>(json['unreadCount']),
-      shareCode: serializer.fromJson<String?>(json['shareCode']),
-      expiresAt: serializer.fromJson<DateTime?>(json['expiresAt']),
       myRole: serializer.fromJson<String>(json['myRole']),
       lastMessageId: serializer.fromJson<String?>(json['lastMessageId']),
       lastMessageAt: serializer.fromJson<DateTime?>(json['lastMessageAt']),
@@ -1359,8 +1315,6 @@ class ConversationData extends DataClass
       'mode': serializer.toJson<String>(mode),
       'status': serializer.toJson<String>(status),
       'unreadCount': serializer.toJson<int>(unreadCount),
-      'shareCode': serializer.toJson<String?>(shareCode),
-      'expiresAt': serializer.toJson<DateTime?>(expiresAt),
       'myRole': serializer.toJson<String>(myRole),
       'lastMessageId': serializer.toJson<String?>(lastMessageId),
       'lastMessageAt': serializer.toJson<DateTime?>(lastMessageAt),
@@ -1377,8 +1331,6 @@ class ConversationData extends DataClass
           String? mode,
           String? status,
           int? unreadCount,
-          Value<String?> shareCode = const Value.absent(),
-          Value<DateTime?> expiresAt = const Value.absent(),
           String? myRole,
           Value<String?> lastMessageId = const Value.absent(),
           Value<DateTime?> lastMessageAt = const Value.absent(),
@@ -1392,8 +1344,6 @@ class ConversationData extends DataClass
         mode: mode ?? this.mode,
         status: status ?? this.status,
         unreadCount: unreadCount ?? this.unreadCount,
-        shareCode: shareCode.present ? shareCode.value : this.shareCode,
-        expiresAt: expiresAt.present ? expiresAt.value : this.expiresAt,
         myRole: myRole ?? this.myRole,
         lastMessageId:
             lastMessageId.present ? lastMessageId.value : this.lastMessageId,
@@ -1412,8 +1362,6 @@ class ConversationData extends DataClass
       status: data.status.present ? data.status.value : this.status,
       unreadCount:
           data.unreadCount.present ? data.unreadCount.value : this.unreadCount,
-      shareCode: data.shareCode.present ? data.shareCode.value : this.shareCode,
-      expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
       myRole: data.myRole.present ? data.myRole.value : this.myRole,
       lastMessageId: data.lastMessageId.present
           ? data.lastMessageId.value
@@ -1436,8 +1384,6 @@ class ConversationData extends DataClass
           ..write('mode: $mode, ')
           ..write('status: $status, ')
           ..write('unreadCount: $unreadCount, ')
-          ..write('shareCode: $shareCode, ')
-          ..write('expiresAt: $expiresAt, ')
           ..write('myRole: $myRole, ')
           ..write('lastMessageId: $lastMessageId, ')
           ..write('lastMessageAt: $lastMessageAt, ')
@@ -1448,21 +1394,8 @@ class ConversationData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      id,
-      name,
-      avatarUrl,
-      type,
-      mode,
-      status,
-      unreadCount,
-      shareCode,
-      expiresAt,
-      myRole,
-      lastMessageId,
-      lastMessageAt,
-      createdAt,
-      updatedAt);
+  int get hashCode => Object.hash(id, name, avatarUrl, type, mode, status,
+      unreadCount, myRole, lastMessageId, lastMessageAt, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1474,8 +1407,6 @@ class ConversationData extends DataClass
           other.mode == this.mode &&
           other.status == this.status &&
           other.unreadCount == this.unreadCount &&
-          other.shareCode == this.shareCode &&
-          other.expiresAt == this.expiresAt &&
           other.myRole == this.myRole &&
           other.lastMessageId == this.lastMessageId &&
           other.lastMessageAt == this.lastMessageAt &&
@@ -1491,8 +1422,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
   final Value<String> mode;
   final Value<String> status;
   final Value<int> unreadCount;
-  final Value<String?> shareCode;
-  final Value<DateTime?> expiresAt;
   final Value<String> myRole;
   final Value<String?> lastMessageId;
   final Value<DateTime?> lastMessageAt;
@@ -1507,8 +1436,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
     this.mode = const Value.absent(),
     this.status = const Value.absent(),
     this.unreadCount = const Value.absent(),
-    this.shareCode = const Value.absent(),
-    this.expiresAt = const Value.absent(),
     this.myRole = const Value.absent(),
     this.lastMessageId = const Value.absent(),
     this.lastMessageAt = const Value.absent(),
@@ -1524,8 +1451,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
     required String mode,
     required String status,
     this.unreadCount = const Value.absent(),
-    this.shareCode = const Value.absent(),
-    this.expiresAt = const Value.absent(),
     required String myRole,
     this.lastMessageId = const Value.absent(),
     this.lastMessageAt = const Value.absent(),
@@ -1547,8 +1472,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
     Expression<String>? mode,
     Expression<String>? status,
     Expression<int>? unreadCount,
-    Expression<String>? shareCode,
-    Expression<DateTime>? expiresAt,
     Expression<String>? myRole,
     Expression<String>? lastMessageId,
     Expression<DateTime>? lastMessageAt,
@@ -1564,8 +1487,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
       if (mode != null) 'mode': mode,
       if (status != null) 'status': status,
       if (unreadCount != null) 'unread_count': unreadCount,
-      if (shareCode != null) 'share_code': shareCode,
-      if (expiresAt != null) 'expires_at': expiresAt,
       if (myRole != null) 'my_role': myRole,
       if (lastMessageId != null) 'last_message_id': lastMessageId,
       if (lastMessageAt != null) 'last_message_at': lastMessageAt,
@@ -1583,8 +1504,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
       Value<String>? mode,
       Value<String>? status,
       Value<int>? unreadCount,
-      Value<String?>? shareCode,
-      Value<DateTime?>? expiresAt,
       Value<String>? myRole,
       Value<String?>? lastMessageId,
       Value<DateTime?>? lastMessageAt,
@@ -1599,8 +1518,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
       mode: mode ?? this.mode,
       status: status ?? this.status,
       unreadCount: unreadCount ?? this.unreadCount,
-      shareCode: shareCode ?? this.shareCode,
-      expiresAt: expiresAt ?? this.expiresAt,
       myRole: myRole ?? this.myRole,
       lastMessageId: lastMessageId ?? this.lastMessageId,
       lastMessageAt: lastMessageAt ?? this.lastMessageAt,
@@ -1634,12 +1551,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
     if (unreadCount.present) {
       map['unread_count'] = Variable<int>(unreadCount.value);
     }
-    if (shareCode.present) {
-      map['share_code'] = Variable<String>(shareCode.value);
-    }
-    if (expiresAt.present) {
-      map['expires_at'] = Variable<DateTime>(expiresAt.value);
-    }
     if (myRole.present) {
       map['my_role'] = Variable<String>(myRole.value);
     }
@@ -1671,8 +1582,6 @@ class ConversationsCompanion extends UpdateCompanion<ConversationData> {
           ..write('mode: $mode, ')
           ..write('status: $status, ')
           ..write('unreadCount: $unreadCount, ')
-          ..write('shareCode: $shareCode, ')
-          ..write('expiresAt: $expiresAt, ')
           ..write('myRole: $myRole, ')
           ..write('lastMessageId: $lastMessageId, ')
           ..write('lastMessageAt: $lastMessageAt, ')
@@ -4083,8 +3992,6 @@ typedef $$ConversationsTableCreateCompanionBuilder = ConversationsCompanion
   required String mode,
   required String status,
   Value<int> unreadCount,
-  Value<String?> shareCode,
-  Value<DateTime?> expiresAt,
   required String myRole,
   Value<String?> lastMessageId,
   Value<DateTime?> lastMessageAt,
@@ -4101,8 +4008,6 @@ typedef $$ConversationsTableUpdateCompanionBuilder = ConversationsCompanion
   Value<String> mode,
   Value<String> status,
   Value<int> unreadCount,
-  Value<String?> shareCode,
-  Value<DateTime?> expiresAt,
   Value<String> myRole,
   Value<String?> lastMessageId,
   Value<DateTime?> lastMessageAt,
@@ -4162,12 +4067,6 @@ class $$ConversationsTableFilterComposer
 
   ColumnFilters<int> get unreadCount => $composableBuilder(
       column: $table.unreadCount, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<String> get shareCode => $composableBuilder(
-      column: $table.shareCode, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get expiresAt => $composableBuilder(
-      column: $table.expiresAt, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get myRole => $composableBuilder(
       column: $table.myRole, builder: (column) => ColumnFilters(column));
@@ -4236,12 +4135,6 @@ class $$ConversationsTableOrderingComposer
   ColumnOrderings<int> get unreadCount => $composableBuilder(
       column: $table.unreadCount, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get shareCode => $composableBuilder(
-      column: $table.shareCode, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get expiresAt => $composableBuilder(
-      column: $table.expiresAt, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get myRole => $composableBuilder(
       column: $table.myRole, builder: (column) => ColumnOrderings(column));
 
@@ -4289,12 +4182,6 @@ class $$ConversationsTableAnnotationComposer
 
   GeneratedColumn<int> get unreadCount => $composableBuilder(
       column: $table.unreadCount, builder: (column) => column);
-
-  GeneratedColumn<String> get shareCode =>
-      $composableBuilder(column: $table.shareCode, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get expiresAt =>
-      $composableBuilder(column: $table.expiresAt, builder: (column) => column);
 
   GeneratedColumn<String> get myRole =>
       $composableBuilder(column: $table.myRole, builder: (column) => column);
@@ -4364,8 +4251,6 @@ class $$ConversationsTableTableManager extends RootTableManager<
             Value<String> mode = const Value.absent(),
             Value<String> status = const Value.absent(),
             Value<int> unreadCount = const Value.absent(),
-            Value<String?> shareCode = const Value.absent(),
-            Value<DateTime?> expiresAt = const Value.absent(),
             Value<String> myRole = const Value.absent(),
             Value<String?> lastMessageId = const Value.absent(),
             Value<DateTime?> lastMessageAt = const Value.absent(),
@@ -4381,8 +4266,6 @@ class $$ConversationsTableTableManager extends RootTableManager<
             mode: mode,
             status: status,
             unreadCount: unreadCount,
-            shareCode: shareCode,
-            expiresAt: expiresAt,
             myRole: myRole,
             lastMessageId: lastMessageId,
             lastMessageAt: lastMessageAt,
@@ -4398,8 +4281,6 @@ class $$ConversationsTableTableManager extends RootTableManager<
             required String mode,
             required String status,
             Value<int> unreadCount = const Value.absent(),
-            Value<String?> shareCode = const Value.absent(),
-            Value<DateTime?> expiresAt = const Value.absent(),
             required String myRole,
             Value<String?> lastMessageId = const Value.absent(),
             Value<DateTime?> lastMessageAt = const Value.absent(),
@@ -4415,8 +4296,6 @@ class $$ConversationsTableTableManager extends RootTableManager<
             mode: mode,
             status: status,
             unreadCount: unreadCount,
-            shareCode: shareCode,
-            expiresAt: expiresAt,
             myRole: myRole,
             lastMessageId: lastMessageId,
             lastMessageAt: lastMessageAt,
